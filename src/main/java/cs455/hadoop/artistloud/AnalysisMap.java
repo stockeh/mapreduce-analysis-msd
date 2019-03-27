@@ -23,10 +23,12 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
     String songID = itr[ 1 ];
     String loudness = itr[ 10 ];
+    String fadeInDuration = itr[ 6 ];
 
-    if ( songID.length() > 0 && loudness.length() > 0 )
+    if ( songID.length() > 0 )
     {
-      context.write( new Text( songID ), new Text( loudness ) );
+      context.write( new Text( songID ),
+          new Text( loudness + "\t" + fadeInDuration ) );
     }
   }
 

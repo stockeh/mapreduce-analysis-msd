@@ -19,30 +19,48 @@ import org.apache.hadoop.mapreduce.Reducer;
  */
 public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
 
+  private static final Map<Text, Double> songsPerArtist = new HashMap<>();
+
   private static final Map<Text, ArrayList<Double>> loudnessPerArtist =
       new HashMap<>();
-  private static final Map<Text, Double> songsPerArtist = new HashMap<>();
+
+  private static final Map<Text, Double> fadeDurationPerArtist =
+      new HashMap<>();
 
   @Override
   protected void reduce(Text key, Iterable<Text> values, Context context)
       throws IOException, InterruptedException {
 
-    Double loudness = null;
+    Double loudness = new Double( 0 );
+    Double fadeInDuration = new Double( 0 );
     Text name = null;
     for ( Text v : values )
     {
-      try
+      String[] elements = v.toString().split( "\t" );
+
+      if ( elements.length == 2 )
       {
-        loudness = Double.parseDouble( v.toString() );
-      } catch ( NumberFormatException e )
+        try
+        {
+          loudness = Double.parseDouble( elements[ 0 ] );
+          fadeInDuration = Double.parseDouble( elements[ 1 ] );
+        } catch ( NumberFormatException e )
+        {
+          System.err.println( "Defaulting loudness and fadeInDuration to 0.0" );
+        }
+      } else
       {
         name = new Text( v );
       }
     }
-    if ( loudness != null && name != null )
+    if ( name != null )
     {
       // Increment song per artist if exists, else default to 1 song
-      songsPerArtist.put( name, songsPerArtist.getOrDefault( name, 1.0 ) + 1 );
+      songsPerArtist.put( name, songsPerArtist.getOrDefault( name, 0.0 ) + 1 );
+
+      // Sum all fadeInDuration times for an artist
+      fadeDurationPerArtist.put( name,
+          songsPerArtist.getOrDefault( name, 0.0 ) + fadeInDuration );
 
       // Append loudness of song to list for a given artist
       ArrayList<Double> list = loudnessPerArtist.get( name );
@@ -54,7 +72,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
       list.add( loudness );
     } else
     {
-      System.err.println( "Missing name or loudness for song_id" );
+      System.err.println( "Missing name for song_id" );
     }
   }
 
@@ -62,11 +80,15 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
 
-    topSongs( context, "\n-----Artist who has the most songs-----" );
+    topSongs( context, "\n-----Q1. Artist who has the most songs-----" );
 
     averageLoudness( context,
-        "\n-----Artist's who's songs are the loudest on average-----" );
+        "\n-----Q2. Artist's who's songs are the loudest on average-----" );
+
+    totalFadeIn( context,
+        "\n-----Q4. Artist with highest total time spent fading in songs-----" );
   }
+
 
   /**
    * Print out the top artist who has the most songs in the data set.
@@ -80,8 +102,8 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
    */
   private void topSongs(Context context, String msg)
       throws IOException, InterruptedException {
-
-    Map<Text, Double> sortedSongsPerArtist = sortMapByValue( songsPerArtist );
+    final Map<Text, Double> sortedSongsPerArtist =
+        sortMapByValue( songsPerArtist );
 
     context.write( new Text( msg ), new DoubleWritable() );
 
@@ -113,12 +135,35 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
       avgLoudnessPerArtist.put( entry.getKey(),
           average.isPresent() ? average.getAsDouble() : -9999 );
     }
-    Map<Text, Double> sortedLoudnessPerArtist =
+    final Map<Text, Double> sortedLoudnessPerArtist =
         sortMapByValue( avgLoudnessPerArtist );
 
     context.write( new Text( msg ), new DoubleWritable() );
 
     writeMapToContext( context, sortedLoudnessPerArtist, 10 );
+  }
+
+
+  /**
+   * Print out the artist that has the highest total time spend fading
+   * in their songs.
+   * 
+   * This requires sorting the <code>HashMap</code>
+   * fadeDurationPerArtist.
+   * 
+   * @param context
+   * @param string
+   * @throws InterruptedException
+   * @throws IOException
+   */
+  private void totalFadeIn(Context context, String msg)
+      throws IOException, InterruptedException {
+    final Map<Text, Double> sortedSongsPerArtist =
+        sortMapByValue( fadeDurationPerArtist );
+
+    context.write( new Text( msg ), new DoubleWritable() );
+
+    writeMapToContext( context, sortedSongsPerArtist, 10 );
   }
 
   /**

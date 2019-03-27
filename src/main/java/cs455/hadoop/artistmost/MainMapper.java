@@ -10,15 +10,21 @@ import org.apache.hadoop.mapreduce.Mapper;
  * Mapper: Reads line by line, split them into words. Emit <word, 1>
  * pairs.
  */
-public class MainMapper
-    extends Mapper<LongWritable, Text, Text, IntWritable> {
+public class MainMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 
   private final String regexSplit = ",(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
 
   @Override
   protected void map(LongWritable key, Text value, Context context)
       throws IOException, InterruptedException {
+
     String[] itr = value.toString().split( regexSplit );
-    context.write( new Text( itr[ 7 ] ), new IntWritable( 1 ) );
+
+    String artistName = itr[ 7 ];
+
+    if ( artistName.length() > 0 )
+    {
+      context.write( new Text( artistName ), new IntWritable( 1 ) );
+    }
   }
 }
