@@ -13,15 +13,12 @@ import org.apache.hadoop.mapreduce.Mapper;
 public class WordCountMapper
     extends Mapper<LongWritable, Text, Text, IntWritable> {
 
+  private final String regexSplit = ",(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
+
   @Override
   protected void map(LongWritable key, Text value, Context context)
       throws IOException, InterruptedException {
-    // tokenize into words.
-    String[] itr = value.toString().split( "," );
-    // emit word, count pairs.
-    for ( int i = 0; i < itr.length; i++ )
-    {
-      context.write( new Text( itr[ i ] ), new IntWritable( 1 ) );
-    }
+    String[] itr = value.toString().split( regexSplit );
+    context.write( new Text( itr[ 7 ] ), new IntWritable( 1 ) );
   }
 }

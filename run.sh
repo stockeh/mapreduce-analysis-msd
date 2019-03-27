@@ -2,10 +2,15 @@
 
 JAR_FILE="mapreduce-analysis-msd.jar"
 
-# gradle clean; gralde build;
+## Compile project
 
-export HADOOP_CONF_DIR=${HOME}/cs455/mapreduce/client-config
+find ~/.gradle -type f -name "*.lock" | while read f; do rm $f; done
+gradle build
 
-$HADOOP_HOME/bin/hadoop fs -rm -R /home/analysis/out ||: \
-&& $HADOOP_HOME/bin/hadoop jar build/libs/${JAR_FILE} cs455.hadoop.analysis.WordCountJob /data/metadata/metadata1.csv /home/analysis/out \
-&& $HADOOP_HOME/bin/hadoop fs -ls /home/analysis/out
+## Connect to shared HDFS
+
+# export HADOOP_CONF_DIR=${HOME}/cs455/mapreduce/client-config
+
+$HADOOP_HOME/bin/hadoop fs -rm -R /analysis/out ||: \
+&& $HADOOP_HOME/bin/hadoop jar build/libs/${JAR_FILE} cs455.hadoop.analysis.WordCountJob /local/metadata/metadata1.csv /analysis/out \
+&& $HADOOP_HOME/bin/hadoop fs -ls /analysis/out

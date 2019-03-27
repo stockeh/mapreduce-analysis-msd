@@ -37,4 +37,4 @@ build
 .settings/
 *.class
 /bin/
-
+/local-data/

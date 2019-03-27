@@ -1,8 +1,12 @@
 package cs455.hadoop.analysis;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -12,36 +16,38 @@ import org.apache.hadoop.mapreduce.Reducer;
  * given word. Emits <word, total count> pairs.
  */
 public class WordCountReducer
-    extends Reducer<Text, IntWritable, Text, NullWritable> {
+    extends Reducer<Text, IntWritable, Text, IntWritable> {
 
-  private int topArtistCount = 0;
-  private final Text topArtistName = new Text();
+  private static Map<Text, Integer> tree = new HashMap<>();
 
   @Override
   protected void reduce(Text key, Iterable<IntWritable> values, Context context)
       throws IOException, InterruptedException {
 
-    int count = 0;
+    int sum = 0;
     for ( IntWritable val : values )
     {
-      count += val.get();
+      sum += val.get();
     }
-    // if ( values instanceof Collection )
-    // {
-    // count = ( ( Collection<?> ) values ).size();
-    // }
-    System.out.println( "HERE: " + count );
-
-    if ( count > topArtistCount )
-    {
-      topArtistName.set( key );
-    }
+    tree.put( new Text( key ), sum );
   }
 
   @Override
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
-    context.write( topArtistName, NullWritable.get() );
+    Map<Text, Integer> sortedMap = tree.entrySet().stream()
+        .sorted( Map.Entry.comparingByValue( Comparator.reverseOrder() ) )
+        .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
+            (e1, e2) -> e1, LinkedHashMap::new ) );
 
+    int count = 0;
+    for ( Text key : sortedMap.keySet() )
+    {
+      if ( count++ < 10 )
+        context.write( key, new IntWritable( sortedMap.get( key ) ) );
+      else
+        break;
+    }
   }
+
 }
