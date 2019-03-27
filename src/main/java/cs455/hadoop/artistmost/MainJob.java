@@ -1,4 +1,4 @@
-package cs455.hadoop.analysis;
+package cs455.hadoop.artistmost;
 
 import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
@@ -13,19 +13,19 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
  * This is the main class. Hadoop will invoke the main method of this
  * class.
  */
-public class WordCountJob {
+public class MainJob {
 
   public static void main(String[] args) {
     try
     {
       Configuration conf = new Configuration();
 
-      Job job = Job.getInstance( conf, "Meta Analysis" );
-      job.setJarByClass( WordCountJob.class );
+      Job job = Job.getInstance( conf, "Artist Most" );
+      job.setJarByClass( MainJob.class );
 
-      job.setMapperClass( WordCountMapper.class );
-      job.setCombinerClass( WordCountReducer.class );
-      job.setReducerClass( WordCountReducer.class );
+      job.setMapperClass( MainMapper.class );
+      job.setCombinerClass( MainReducer.class );
+      job.setReducerClass( MainReducer.class );
 
       job.setMapOutputKeyClass( Text.class );
       job.setMapOutputValueClass( IntWritable.class );

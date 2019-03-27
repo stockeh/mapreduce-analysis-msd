@@ -1,4 +1,4 @@
-package cs455.hadoop.analysis;
+package cs455.hadoop.artistmost;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  * receives word, list<count> pairs. Sums up individual counts per
  * given word. Emits <word, total count> pairs.
  */
-public class WordCountReducer
+public class MainReducer
     extends Reducer<Text, IntWritable, Text, IntWritable> {
 
   private static Map<Text, Integer> tree = new HashMap<>();
@@ -29,6 +29,7 @@ public class WordCountReducer
     {
       sum += val.get();
     }
+    // TODO: Remove new Text?
     tree.put( new Text( key ), sum );
   }
 

@@ -1,24 +1,25 @@
-package cs455.hadoop.analysis;
+package cs455.hadoop.artistloud;
 
 import java.io.IOException;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-/**
- * Mapper: Reads line by line, split them into words. Emit <word, 1>
- * pairs.
- */
-public class WordCountMapper
-    extends Mapper<LongWritable, Text, Text, IntWritable> {
+public class MetadataMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final String regexSplit = ",(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
 
+  /**
+   * Expected Output:
+   * 
+   * < song_id , artists_name >
+   * 
+   */
   @Override
   protected void map(LongWritable key, Text value, Context context)
       throws IOException, InterruptedException {
+    
     String[] itr = value.toString().split( regexSplit );
-    context.write( new Text( itr[ 7 ] ), new IntWritable( 1 ) );
+    context.write( new Text( itr[ 8 ] ), new Text( itr[ 7 ] ) );
   }
 }
