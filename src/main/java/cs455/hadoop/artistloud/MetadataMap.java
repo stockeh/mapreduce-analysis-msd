@@ -20,6 +20,13 @@ public class MetadataMap extends Mapper<LongWritable, Text, Text, Text> {
       throws IOException, InterruptedException {
     
     String[] itr = value.toString().split( regexSplit );
-    context.write( new Text( itr[ 8 ] ), new Text( itr[ 7 ] ) );
+    
+    String songID = itr[ 8 ];
+    String artistName = itr[ 7 ];
+
+    if ( songID.length() > 0 && artistName.length() > 0 )
+    {
+      context.write( new Text( songID ), new Text( artistName ) );
+    }
   }
 }

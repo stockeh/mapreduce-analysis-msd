@@ -18,9 +18,16 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
   @Override
   protected void map(LongWritable key, Text value, Context context)
       throws IOException, InterruptedException {
-    
+
     String[] itr = value.toString().split( regexSplit );
-    context.write( new Text( itr[ 1 ] ), new Text( itr[ 10 ] ) );
+
+    String songID = itr[ 1 ];
+    String loudness = itr[ 10 ];
+
+    if ( songID.length() > 0 && loudness.length() > 0 )
+    {
+      context.write( new Text( songID ), new Text( loudness ) );
+    }
   }
 
 }
