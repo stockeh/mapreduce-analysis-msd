@@ -8,8 +8,8 @@ cat << EOF
     
     Usage: run.sh -[ 1 | 2 ] -c
 
-    -1 : Artist With Most Songs
-    -2 : Artist's With Loudest Songs
+    -1 : Artist Questions Q1, Q2, and Q4
+    -2 : Song Questions Q3, Q5, and Q6
     
     -c : compile
     
@@ -29,16 +29,22 @@ fi
 SECOND_INPUT=""
 
 case "$1" in
-
--1) CLASS_JOB="artistmost"
-    ;;
     
--2) CLASS_JOB="artistloud"
+-1) CLASS_JOB="artist"
     SECOND_INPUT="/${HDFS_DATA}/analysis/"
     ;;
 
+    
+-2) CLASS_JOB="song"
+    SECOND_INPUT="/${HDFS_DATA}/analysis/"
+    ;;
+    
+-9) CLASS_JOB="artistmost"
+    ;;
+    
 *) usage;
     ;;
+    
 esac
 
 echo ${SECOND_INPUT}
@@ -47,8 +53,8 @@ echo ${SECOND_INPUT}
 # 
 # export HADOOP_CONF_DIR=${HOME}/cs455/mapreduce/client-config
 # 
-$HADOOP_HOME/bin/hadoop fs -rm -R /analysis/out/${CLASS_JOB} ||: \
+$HADOOP_HOME/bin/hadoop fs -rm -R /out/${CLASS_JOB} ||: \
 && $HADOOP_HOME/bin/hadoop jar build/libs/${JAR_FILE} cs455.hadoop.${CLASS_JOB}.MainJob \
-/${HDFS_DATA}/metadata/ $SECOND_INPUT /analysis/out/${CLASS_JOB} \
-&& $HADOOP_HOME/bin/hadoop fs -ls /analysis/out/${CLASS_JOB} \
-&& $HADOOP_HOME/bin/hadoop fs -head /analysis/out/${CLASS_JOB}/part-r-00000
+/${HDFS_DATA}/metadata/ $SECOND_INPUT /out/${CLASS_JOB} \
+&& $HADOOP_HOME/bin/hadoop fs -ls /out/${CLASS_JOB} \
+&& $HADOOP_HOME/bin/hadoop fs -head /out/${CLASS_JOB}/part-r-00000

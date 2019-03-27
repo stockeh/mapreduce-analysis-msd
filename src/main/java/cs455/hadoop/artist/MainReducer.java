@@ -1,4 +1,4 @@
-package cs455.hadoop.artistloud;
+package cs455.hadoop.artist;
 
 import java.io.IOException;
 import java.util.ArrayList;

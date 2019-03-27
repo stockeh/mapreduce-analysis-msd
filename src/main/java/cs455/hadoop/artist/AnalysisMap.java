@@ -1,32 +1,35 @@
-package cs455.hadoop.artistloud;
+package cs455.hadoop.artist;
 
 import java.io.IOException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class MetadataMap extends Mapper<LongWritable, Text, Text, Text> {
+public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final String regexSplit = ",(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
 
   /**
    * Expected Output:
    * 
-   * < song_id , artists_name >
+   * < song_id , loudness >
    * 
    */
   @Override
   protected void map(LongWritable key, Text value, Context context)
       throws IOException, InterruptedException {
-    
-    String[] itr = value.toString().split( regexSplit );
-    
-    String songID = itr[ 8 ];
-    String artistName = itr[ 7 ];
 
-    if ( songID.length() > 0 && artistName.length() > 0 )
+    String[] itr = value.toString().split( regexSplit );
+
+    String songID = itr[ 1 ];
+    String loudness = itr[ 10 ];
+    String fadeInDuration = itr[ 6 ];
+
+    if ( songID.length() > 0 )
     {
-      context.write( new Text( songID ), new Text( artistName ) );
+      context.write( new Text( songID ),
+          new Text( loudness + "\t" + fadeInDuration ) );
     }
   }
+
 }
