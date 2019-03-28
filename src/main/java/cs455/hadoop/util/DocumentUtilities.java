@@ -2,6 +2,7 @@ package cs455.hadoop.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,20 +44,33 @@ public class DocumentUtilities {
   }
 
   /**
-   * Sort a map by value in descending order.
+   * Sort a map by value in specified order.
    * 
    * @param map
+   * @param descending true for descending, false for ascending
    * @return a new map of sorted <K, V> pairs.
    */
-  public static Map<Text, Double> sortMapByValue(Map<Text, Double> map) {
-    return map.entrySet().stream()
-        .sorted( Map.Entry.comparingByValue( Comparator.reverseOrder() ) )
+  public static Map<Text, Double> sortMapByValue(Map<Text, Double> map,
+      boolean descending) {
+    Comparator<Map.Entry<Text, Double>> comparator =
+        Map.Entry.comparingByValue();
+    if ( descending )
+    {
+      comparator = Collections.reverseOrder( comparator );
+    }
+    return map.entrySet().stream().sorted( comparator )
         .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
-            (e1, e2) -> e1, LinkedHashMap::new ) );
+            (e1, e2) -> e2, LinkedHashMap::new ) );
+    //
+    // return map.entrySet().stream()
+    // .sorted( Map.Entry.comparingByValue( Comparator.reverseOrder() ) )
+    // .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
+    // (e1, e2) -> e1, LinkedHashMap::new ) );
   }
 
   /**
-   * Write out the first <code>numElements</code> to context.
+   * Write out the first <code>numElements</code> of a <code>Map</code>
+   * to context.
    * 
    * @param context
    * @param map
@@ -72,9 +86,12 @@ public class DocumentUtilities {
     for ( Text key : map.keySet() )
     {
       if ( count++ < numElements )
+      {
         context.write( key, new DoubleWritable( map.get( key ) ) );
-      else
+      } else
+      {
         break;
+      }
     }
   }
 

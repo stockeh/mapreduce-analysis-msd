@@ -28,7 +28,7 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
     String id = itr.get( 1 );
     String loudness = itr.get( 10 );
     String fadeInDuration = itr.get( 6 );
-
+    // TODO: Verify fadeInDuration is a double..
     if ( id.length() > 0 )
     {
       songID.set( id );

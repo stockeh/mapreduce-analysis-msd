@@ -101,7 +101,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   private void topSongs(Context context, String msg)
       throws IOException, InterruptedException {
     final Map<Text, Double> sortedSongsPerArtist =
-        DocumentUtilities.sortMapByValue( songsPerArtist );
+        DocumentUtilities.sortMapByValue( songsPerArtist, true );
 
     context.write( new Text( msg ), new DoubleWritable() );
 
@@ -134,7 +134,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
           average.isPresent() ? average.getAsDouble() : -9999 );
     }
     final Map<Text, Double> sortedLoudnessPerArtist =
-        DocumentUtilities.sortMapByValue( avgLoudnessPerArtist );
+        DocumentUtilities.sortMapByValue( avgLoudnessPerArtist, true );
 
     context.write( new Text( msg ), new DoubleWritable() );
 
@@ -157,7 +157,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   private void totalFadeIn(Context context, String msg)
       throws IOException, InterruptedException {
     final Map<Text, Double> sortedSongsPerArtist =
-        DocumentUtilities.sortMapByValue( fadeDurationPerArtist );
+        DocumentUtilities.sortMapByValue( fadeDurationPerArtist, true );
 
     context.write( new Text( msg ), new DoubleWritable() );
 
