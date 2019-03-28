@@ -57,4 +57,4 @@ $HADOOP_HOME/bin/hadoop fs -rm -R /out/${CLASS_JOB} ||: \
 && $HADOOP_HOME/bin/hadoop jar build/libs/${JAR_FILE} cs455.hadoop.${CLASS_JOB}.MainJob \
 /${HDFS_DATA}/metadata/ $SECOND_INPUT /out/${CLASS_JOB} \
 && $HADOOP_HOME/bin/hadoop fs -ls /out/${CLASS_JOB} \
-&& $HADOOP_HOME/bin/hadoop fs -head /out/${CLASS_JOB}/part-r-00000
+&& $HADOOP_HOME/bin/hadoop fs -cat /out/${CLASS_JOB}/part-r-00000

@@ -27,7 +27,7 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
     String id = itr.get( 1 );
     String hotness = itr.get( 2 );
-    String duration = itr.get( 6 );
+    String duration = itr.get( 5 );
 
     if ( id.length() > 0 )
     {
