@@ -47,7 +47,9 @@ case "$1" in
     
 esac
 
-echo ${SECOND_INPUT}
+LINES=`find . -name "*.java" -print | xargs wc -l | grep "total" | awk '{$1=$1};1'`
+
+echo Project has "$LINES" lines
 
 # Connect to shared HDFS
 # 
