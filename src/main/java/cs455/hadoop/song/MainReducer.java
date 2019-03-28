@@ -1,14 +1,12 @@
 package cs455.hadoop.song;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import cs455.hadoop.util.DocumentUtilities;
 
 /**
  * Reducer: Input to the reducer is the output from the mapper. It
@@ -63,46 +61,10 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   private void topHotness(Context context, String msg)
       throws IOException, InterruptedException {
     final Map<Text, Double> sortedHotnessPerSong =
-        sortMapByValue( hotnessPerSong );
+        DocumentUtilities.sortMapByValue( hotnessPerSong );
 
     context.write( new Text( msg ), new DoubleWritable() );
 
-    writeMapToContext( context, sortedHotnessPerSong, 10 );
+    DocumentUtilities.writeMapToContext( context, sortedHotnessPerSong, 10 );
   }
-
-  /**
-   * Sort the map by value in descending order.
-   * 
-   * @param map
-   * @return a new map of sorted <K, V> pairs.
-   */
-  private Map<Text, Double> sortMapByValue(Map<Text, Double> map) {
-    return map.entrySet().stream()
-        .sorted( Map.Entry.comparingByValue( Comparator.reverseOrder() ) )
-        .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
-            (e1, e2) -> e1, LinkedHashMap::new ) );
-  }
-
-  /**
-   * Write out the first <code>numElements</code> to context.
-   * 
-   * @param context
-   * @param map
-   * @param numElements
-   * @throws IOException
-   * @throws InterruptedException
-   */
-  private void writeMapToContext(Context context, Map<Text, Double> map,
-      int numElements) throws IOException, InterruptedException {
-
-    int count = 0;
-    for ( Text key : map.keySet() )
-    {
-      if ( count++ < numElements )
-        context.write( key, new DoubleWritable( map.get( key ) ) );
-      else
-        break;
-    }
-  }
-
 }

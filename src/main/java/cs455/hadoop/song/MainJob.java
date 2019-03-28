@@ -53,7 +53,7 @@ public class MainJob {
 
       Job job = Job.getInstance( conf, "Songs - Job 1" );
       job.setJarByClass( MainJob.class );
-      // job.setNumReduceTasks(4);
+      job.setNumReduceTasks( 1 );
 
       job.setMapOutputKeyClass( Text.class );
       job.setMapOutputValueClass( Text.class );
