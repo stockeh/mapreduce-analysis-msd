@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
@@ -19,10 +18,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
 
   private static final Map<Text, Double> hotnessPerSong = new HashMap<>();
-
-  private static Double top = new Double( 0 );
-
-  private static final Text topTitle = new Text();
 
   @Override
   protected void reduce(Text key, Iterable<Text> values, Context context)
@@ -51,25 +46,15 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
         songTitle = new Text( v );
       }
     }
-
-    if ( hotness > top )
-    {
-      topTitle.set( songTitle );
-      top = hotness;
-    }
-
     if ( hotness != 0 )
     {
       hotnessPerSong.put( songTitle, hotness );
     }
-
   }
 
   @Override
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
-
-    context.write( topTitle, new DoubleWritable( top ) );
 
     topHotness( context,
         "\n-----Q3. Song with the highest hotness score-----" );
