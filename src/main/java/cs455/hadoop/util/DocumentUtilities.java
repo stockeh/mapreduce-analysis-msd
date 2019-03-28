@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
@@ -61,11 +62,23 @@ public class DocumentUtilities {
     return map.entrySet().stream().sorted( comparator )
         .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
             (e1, e2) -> e2, LinkedHashMap::new ) );
-    //
-    // return map.entrySet().stream()
-    // .sorted( Map.Entry.comparingByValue( Comparator.reverseOrder() ) )
-    // .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
-    // (e1, e2) -> e1, LinkedHashMap::new ) );
+  }
+
+  /**
+   * Returns a new double initialized to the value represented by the
+   * specified <code>String</code>.
+   * 
+   * @param str
+   * @return returns number if valid, 0 otherwise.
+   */
+  public static double parseDouble(String str) {
+    try
+    {
+      return Double.parseDouble( str );
+    } catch ( NumberFormatException e )
+    {
+      return 0;
+    }
   }
 
   /**
@@ -83,11 +96,11 @@ public class DocumentUtilities {
       int numElements) throws IOException, InterruptedException {
 
     int count = 0;
-    for ( Text key : map.keySet() )
+    for ( Entry<Text, Double> entry : map.entrySet() )
     {
       if ( count++ < numElements )
       {
-        context.write( key, new DoubleWritable( map.get( key ) ) );
+        context.write( entry.getKey(), new DoubleWritable( entry.getValue() ) );
       } else
       {
         break;
