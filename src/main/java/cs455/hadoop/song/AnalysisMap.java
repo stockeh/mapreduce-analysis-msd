@@ -13,6 +13,8 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final Text outputValue = new Text();
 
+  private final StringBuilder sb = new StringBuilder();
+
   /**
    * Expected Output:
    * 
@@ -26,14 +28,22 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
 
     String id = itr.get( 1 );
-    String hotness = itr.get( 2 );
-    String duration = itr.get( 5 );
 
     if ( id.length() > 0 )
     {
+      sb.append( itr.get( 2 ) ); // hotness
+      sb.append( "\t" );
+      sb.append( itr.get( 5 ) ); // duration
+      sb.append( "\t" );
+      sb.append( itr.get( 4 ) ); // danceability
+      sb.append( "\t" );
+      sb.append( itr.get( 7 ).trim() ); // energy
+      sb.append( "0" );
+
       songID.set( id );
-      outputValue.set( hotness + "\t" + duration );
-      
+      outputValue.set( sb.toString() );
+      sb.setLength( 0 );
+
       context.write( songID, outputValue );
     }
   }

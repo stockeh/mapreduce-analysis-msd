@@ -13,6 +13,8 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final Text outputValue = new Text();
 
+  private final StringBuilder sb = new StringBuilder();
+
   /**
    * Expected Output:
    * 
@@ -26,14 +28,18 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
 
     String id = itr.get( 1 );
-    String loudness = itr.get( 10 );
-    String fadeInDuration = itr.get( 6 );
-    // TODO: Verify fadeInDuration is a double..
+    
     if ( id.length() > 0 )
     {
-      songID.set( id );
-      outputValue.set( loudness + "\t" + fadeInDuration );
+      sb.append( itr.get( 10 ) ); // loudness
+      sb.append( "\t" );
+      sb.append( itr.get( 6 ).trim() ); // fadeInDuration
+      sb.append( "0" );
 
+      songID.set( id );
+      outputValue.set( sb.toString() );
+      sb.setLength( 0 );
+      
       context.write( songID, outputValue );
     }
   }
