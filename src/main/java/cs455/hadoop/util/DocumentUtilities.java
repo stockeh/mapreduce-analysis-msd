@@ -65,6 +65,48 @@ public class DocumentUtilities {
   }
 
   /**
+   * Sort the map depending on the specified song data type in ascending
+   * or descending order.
+   * 
+   * @param map HashMap of the values
+   * @param type type of data
+   * @param descending true for descending, false for ascending
+   * @return a new map of sorted <K, V> pairs.=
+   */
+  public static Map<Text, Song> sortMapByValue(Map<Text, Song> map,
+      final SongData type, boolean descending) {
+
+    Comparator<Entry<Text, Song>> comparator = type.comparator();
+
+    if ( descending )
+    {
+      comparator = Collections.reverseOrder( comparator );
+    }
+    return map.entrySet().stream().sorted( comparator )
+        .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
+            (e1, e2) -> e2, LinkedHashMap::new ) );
+  }
+
+  /**
+   * Create a new <code>Song</code> object for a given song
+   * 
+   * @param map HashMap containing values
+   * @param type type of data
+   * @param key HashMap Key
+   * @param value HashMap value for specified type
+   */
+  public static void addSongData(Map<Text, Song> map, final SongData type,
+      Text key, double value) {
+    Song Song = map.get( key );
+    if ( Song == null )
+    {
+      Song = new Song();
+      map.put( key, Song );
+    }
+    type.add( Song, value );
+  }
+
+  /**
    * Returns a new double initialized to the value represented by the
    * specified <code>String</code>.
    * 
@@ -104,6 +146,39 @@ public class DocumentUtilities {
       } else
       {
         break;
+      }
+    }
+  }
+
+  /**
+   * Write out the first <code>numElements</code> of a <code>Map</code>
+   * to context.
+   * 
+   * @param context
+   * @param map
+   * @param numElements
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  @SuppressWarnings( { "rawtypes", "unchecked" } )
+  public static void writeMapToContext(Context context, Map<Text, Song> map,
+      final SongData type, int numElements)
+      throws IOException, InterruptedException {
+
+    int count = 0;
+    for ( Entry<Text, Song> entry : map.entrySet() )
+    {
+      Song song = entry.getValue();
+      if ( type.isInvalid( song ) )
+      {
+        if ( count++ < numElements )
+        {
+          context.write( entry.getKey(),
+              new DoubleWritable( type.getValue( song ) ) );
+        } else
+        {
+          break;
+        }
       }
     }
   }

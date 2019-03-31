@@ -8,6 +8,8 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import cs455.hadoop.util.DocumentUtilities;
+import cs455.hadoop.util.Song;
+import cs455.hadoop.util.SongData;
 
 /**
  * Reducer: Input to the reducer is the output from the mapper. It
@@ -16,13 +18,7 @@ import cs455.hadoop.util.DocumentUtilities;
  */
 public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
 
-  private static final Map<Text, Double> hotnessPerSong = new HashMap<>();
-
-  private static final Map<Text, Double> durationPerSong = new HashMap<>();
-
-  private static final Map<Text, Double> dancergyPerSong = new HashMap<>();
-
-  private static double totalDuration = 0;
+  private static final Map<Text, Song> songs = new HashMap<>();
 
   @Override
   protected void reduce(Text key, Iterable<Text> values, Context context)
@@ -50,33 +46,42 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
       }
     }
 
-    if ( hotness != 0 )
-    {
-      hotnessPerSong.put( songTitle, hotness );
-    }
-    if ( duration != 0 )
-    {
-      durationPerSong.put( songTitle, duration );
-      totalDuration += duration;
-    }
-    if ( dancergy != 0 )
-    {
-      dancergyPerSong.put( songTitle, dancergy );
-    }
+    DocumentUtilities.addSongData( songs, SongData.HOTNESS, songTitle,
+        hotness );
+
+    DocumentUtilities.addSongData( songs, SongData.DURATION, songTitle,
+        duration );
+
+    DocumentUtilities.addSongData( songs, SongData.DANCE_ENERGY, songTitle,
+        dancergy );
   }
 
   @Override
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
 
-    topHotness( context,
-        "\n-----Q3. Song with the highest hotness score-----" );
+    context.write(
+        new Text( "\n----Q3. Song with the highest hotness score----" ),
+        new DoubleWritable() );
+    top( context, SongData.HOTNESS, true );
 
-    songDuration( context,
-        "\n-----Q5. Longest, shortest, and meadian length songs-----" );
+    context.write(
+        new Text( "\n----Q5. Longest, shortest, and meadian length songs----" ),
+        new DoubleWritable() );
+    context.write( new Text( "\n----LONGEST----" ), new DoubleWritable() );
+    top( context, SongData.DURATION, true );
 
-    topDancergy( context,
-        "\n-----Q6. Most energetic and danceabile songs-----" );
+    context.write( new Text( "\n----SHORTEST----" ), new DoubleWritable() );
+    top( context, SongData.DURATION, false );
+
+    context.write( new Text( "\n----AVERAGE----" ), new DoubleWritable() );
+    songDurationAverage( context );
+
+    context.write(
+        new Text( "\n----Q6. Most energetic and danceabile songs----" ),
+        new DoubleWritable() );
+    top( context, SongData.DANCE_ENERGY, true );
+
   }
 
   /**
@@ -90,39 +95,13 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
    * @throws IOException
    * @throws InterruptedException
    */
-  private void topHotness(Context context, String msg)
+  private void top(Context context, final SongData type, boolean decending)
       throws IOException, InterruptedException {
-    final Map<Text, Double> sortedHotnessPerSong =
-        DocumentUtilities.sortMapByValue( hotnessPerSong, true );
 
-    context.write( new Text( msg ), new DoubleWritable() );
+    final Map<Text, Song> sorted =
+        DocumentUtilities.sortMapByValue( songs, type, decending );
 
-    DocumentUtilities.writeMapToContext( context, sortedHotnessPerSong, 10 );
-  }
-
-  /**
-   * Display the longest, shortest, and songs of median length.
-   * 
-   * @param context
-   * @param msg
-   * @throws IOException
-   * @throws InterruptedException
-   */
-  private void songDuration(Context context, String msg)
-      throws IOException, InterruptedException {
-    context.write( new Text( msg ), new DoubleWritable() );
-
-    context.write( new Text( "\n-----LONGEST-----" ), new DoubleWritable() );
-    Map<Text, Double> sorted =
-        DocumentUtilities.sortMapByValue( durationPerSong, true );
-    DocumentUtilities.writeMapToContext( context, sorted, 10 );
-
-    context.write( new Text( "\n-----SHORTEST-----" ), new DoubleWritable() );
-    sorted = DocumentUtilities.sortMapByValue( durationPerSong, false );
-    DocumentUtilities.writeMapToContext( context, sorted, 10 );
-
-    context.write( new Text( "\n-----AVERAGE-----" ), new DoubleWritable() );
-    songDurationAverage( context );
+    DocumentUtilities.writeMapToContext( context, sorted, type, 10 );
   }
 
   /**
@@ -134,42 +113,27 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
    */
   private void songDurationAverage(Context context)
       throws IOException, InterruptedException {
-    double average = totalDuration / durationPerSong.size();
+    double average = Song.totalDuration / Song.totalSongsOfDuration;
     context.write( new Text( "Actual Average" ),
         new DoubleWritable( average ) );
-
-    Map<Text, Double> averageMap = new HashMap<>();
-    for ( Entry<Text, Double> entry : durationPerSong.entrySet() )
+    final SongData type = SongData.DURATION;
+    Map<Text, Song> averageMap = new HashMap<>();
+    for ( Entry<Text, Song> entry : songs.entrySet() )
     {
-      double value = entry.getValue();
-      if ( value < average + 1 && value > average - 1 )
+      Song song = entry.getValue();
+      if ( type.isInvalid( song ) )
       {
-        averageMap.put( entry.getKey(), value );
-      }
-      if ( averageMap.size() == 10 )
-      {
-        break;
+        double value = song.getDuration();
+        if ( value < average + 1 && value > average - 1 )
+        {
+          averageMap.put( entry.getKey(), song );
+        }
+        if ( averageMap.size() == 10 )
+        {
+          break;
+        }
       }
     }
-    DocumentUtilities.writeMapToContext( context, averageMap, 10 );
-  }
-
-  /**
-   * Display the top songs with the highest energy and danceability
-   * measure.
-   * 
-   * @param context
-   * @param msg
-   * @throws IOException
-   * @throws InterruptedException
-   */
-  private void topDancergy(Context context, String msg)
-      throws IOException, InterruptedException {
-    final Map<Text, Double> sorted =
-        DocumentUtilities.sortMapByValue( dancergyPerSong, true );
-
-    context.write( new Text( msg ), new DoubleWritable() );
-
-    DocumentUtilities.writeMapToContext( context, sorted, 10 );
+    DocumentUtilities.writeMapToContext( context, averageMap, type, 10 );
   }
 }
