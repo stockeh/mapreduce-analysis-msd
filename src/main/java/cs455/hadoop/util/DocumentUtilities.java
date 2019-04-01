@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer.Context;
+import cs455.hadoop.items.Data;
+import cs455.hadoop.items.Item;
 
 public class DocumentUtilities {
 
@@ -42,26 +44,6 @@ public class DocumentUtilities {
     words.add( s.substring( start ) );
 
     return words;
-  }
-
-  /**
-   * Sort a map by value in specified order.
-   * 
-   * @param map
-   * @param descending true for descending, false for ascending
-   * @return a new map of sorted <K, V> pairs.
-   */
-  public static Map<Text, Double> sortMapByValue(Map<Text, Double> map,
-      boolean descending) {
-    Comparator<Map.Entry<Text, Double>> comparator =
-        Map.Entry.comparingByValue();
-    if ( descending )
-    {
-      comparator = Collections.reverseOrder( comparator );
-    }
-    return map.entrySet().stream().sorted( comparator )
-        .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
-            (e1, e2) -> e2, LinkedHashMap::new ) );
   }
 
   /**
@@ -97,10 +79,11 @@ public class DocumentUtilities {
    */
   public static void addData(Map<Text, Item> map, final Data type, Text key,
       double value) {
+
     Item item = map.get( key );
     if ( item == null )
     {
-      item = type.getType();
+      item = type.getNewItem();
       map.put( key, item );
     }
     type.add( item, value );
@@ -120,33 +103,6 @@ public class DocumentUtilities {
     } catch ( NumberFormatException e )
     {
       return 0;
-    }
-  }
-
-  /**
-   * Write out the first <code>numElements</code> of a <code>Map</code>
-   * to context.
-   * 
-   * @param context
-   * @param map
-   * @param numElements
-   * @throws IOException
-   * @throws InterruptedException
-   */
-  @SuppressWarnings( { "rawtypes", "unchecked" } )
-  public static void writeMapToContext(Context context, Map<Text, Double> map,
-      int numElements) throws IOException, InterruptedException {
-
-    int count = 0;
-    for ( Entry<Text, Double> entry : map.entrySet() )
-    {
-      if ( count++ < numElements )
-      {
-        context.write( entry.getKey(), new DoubleWritable( entry.getValue() ) );
-      } else
-      {
-        break;
-      }
     }
   }
 

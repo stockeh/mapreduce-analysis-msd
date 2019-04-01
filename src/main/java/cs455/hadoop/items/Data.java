@@ -1,4 +1,4 @@
-package cs455.hadoop.util;
+package cs455.hadoop.items;
 
 import java.util.Comparator;
 import java.util.Map.Entry;
@@ -61,6 +61,6 @@ public interface Data {
    * @return a new <code>Item</code> relating to a <code>Song</code> or
    *         <code>Artist</code> object
    */
-  public Item getType();
+  public Item getNewItem();
 
 }

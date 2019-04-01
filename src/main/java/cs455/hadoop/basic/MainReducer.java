@@ -1,4 +1,4 @@
-package cs455.hadoop.song;
+package cs455.hadoop.basic;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -7,12 +7,12 @@ import java.util.Map.Entry;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import cs455.hadoop.util.ArtistData;
-import cs455.hadoop.util.Data;
+import cs455.hadoop.items.ArtistData;
+import cs455.hadoop.items.Data;
+import cs455.hadoop.items.Item;
+import cs455.hadoop.items.Song;
+import cs455.hadoop.items.SongData;
 import cs455.hadoop.util.DocumentUtilities;
-import cs455.hadoop.util.Item;
-import cs455.hadoop.util.Song;
-import cs455.hadoop.util.SongData;
 
 /**
  * Reducer class that takes the output from the mapper and organizes
