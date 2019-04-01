@@ -1,4 +1,4 @@
-package cs455.hadoop.song;
+package cs455.hadoop.basic;
 
 import java.io.IOException;
 import java.util.ArrayList;

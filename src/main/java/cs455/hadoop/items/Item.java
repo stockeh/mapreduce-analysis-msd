@@ -1,4 +1,4 @@
-package cs455.hadoop.util;
+package cs455.hadoop.items;
 
 public interface Item {
 

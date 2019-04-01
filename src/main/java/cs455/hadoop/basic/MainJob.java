@@ -1,4 +1,4 @@
-package cs455.hadoop.artist;
+package cs455.hadoop.basic;
 
 import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
@@ -51,10 +51,10 @@ public class MainJob {
     private int runJob1(String[] args, Configuration conf)
         throws IOException, ClassNotFoundException, InterruptedException {
 
-      Job job = Job.getInstance( conf, "Artist - Job 1" );
+      Job job = Job.getInstance( conf, "Songs - Job 1" );
       job.setJarByClass( MainJob.class );
-      job.setNumReduceTasks(1);
-      
+      job.setNumReduceTasks( 1 );
+
       job.setMapOutputKeyClass( Text.class );
       job.setMapOutputValueClass( Text.class );
       job.setOutputKeyClass( Text.class );

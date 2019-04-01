@@ -1,4 +1,4 @@
-package cs455.hadoop.util;
+package cs455.hadoop.items;
 
 import java.util.Comparator;
 import java.util.Map.Entry;
@@ -6,71 +6,25 @@ import org.apache.hadoop.io.Text;
 
 /**
  * Enumerator values, and implemented methods, specific to a
- * <code>Song</code> object members.
+ * <code>Artist</code> object members.
  * 
  * @author stock
  *
  */
-public enum ArtistData implements Data {
+public enum SongData implements Data {
+
   /**
-   * Relating to the total number of songs for some artist.
+   * Relating to the <i>hotness</i> of a given song.
    */
-  TOTAL_SONGS
+  HOTNESS
   {
     /**
      * {@inheritDoc}
      */
     @Override
     public Comparator<Entry<Text, Item>> comparator() {
-      return (e1, e2) -> ( ( Artist ) e1.getValue() ).getTotalSongs()
-          .compareTo( ( ( Artist ) e2.getValue() ).getTotalSongs() );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void add(Item item, double value) {
-      ( ( Artist ) item ).incrementTotalSongs();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isInvalid(Item item) {
-      return ( ( Artist ) item )
-          .getTotalSongs() != cs455.hadoop.util.Item.EPSILON;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Double getValue(Item item) {
-      return ( ( Artist ) item ).getTotalSongs();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Item getType() {
-      return new Artist();
-    }
-  },
-  /**
-   * Relating to the average loudness of songs for a given artist.
-   */
-  LOUDNESS
-  {
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Comparator<Entry<Text, Item>> comparator() {
-      return (e1, e2) -> ( ( Artist ) e1.getValue() ).getLoudness()
-          .compareTo( ( ( Artist ) e2.getValue() ).getLoudness() );
+      return (e1, e2) -> ( ( Song ) e1.getValue() ).getHotness()
+          .compareTo( ( ( Song ) e2.getValue() ).getHotness() );
     }
 
     /**
@@ -80,7 +34,7 @@ public enum ArtistData implements Data {
     public void add(Item item, double value) {
       if ( value != 0 )
       {
-        ( ( Artist ) item ).setLoudness( value );
+        ( ( Song ) item ).setHotness( value );
       }
     }
 
@@ -89,8 +43,7 @@ public enum ArtistData implements Data {
      */
     @Override
     public boolean isInvalid(Item item) {
-      return ( ( Artist ) item )
-          .getLoudness() != cs455.hadoop.util.Item.EPSILON;
+      return ( ( Song ) item ).getHotness() != cs455.hadoop.items.Item.EPSILON;
     }
 
     /**
@@ -98,29 +51,29 @@ public enum ArtistData implements Data {
      */
     @Override
     public Double getValue(Item item) {
-      return ( ( Artist ) item ).getLoudness();
+      return ( ( Song ) item ).getHotness();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Item getType() {
-      return new Artist();
+    public Item getNewItem() {
+      return new Song();
     }
   },
   /**
-   * Relating to the total time spent fading in songs.
+   * Relates to the duration for a given song.
    */
-  FADE_DURATION
+  DURATION
   {
     /**
      * {@inheritDoc}
      */
     @Override
     public Comparator<Entry<Text, Item>> comparator() {
-      return (e1, e2) -> ( ( Artist ) e1.getValue() ).getFade()
-          .compareTo( ( ( Artist ) e2.getValue() ).getFade() );
+      return (e1, e2) -> ( ( Song ) e1.getValue() ).getDuration()
+          .compareTo( ( ( Song ) e2.getValue() ).getDuration() );
     }
 
     /**
@@ -128,10 +81,9 @@ public enum ArtistData implements Data {
      */
     @Override
     public void add(Item item, double value) {
-      // TODO: CHECK if 0 should be a valid fade in duration.
       if ( value != 0 )
       {
-        ( ( Artist ) item ).setFade( value );
+        ( ( Song ) item ).setDuration( value );
       }
     }
 
@@ -140,7 +92,7 @@ public enum ArtistData implements Data {
      */
     @Override
     public boolean isInvalid(Item item) {
-      return ( ( Artist ) item ).getFade() != cs455.hadoop.util.Item.EPSILON;
+      return ( ( Song ) item ).getDuration() != cs455.hadoop.items.Item.EPSILON;
     }
 
     /**
@@ -148,16 +100,64 @@ public enum ArtistData implements Data {
      */
     @Override
     public Double getValue(Item item) {
-      return ( ( Artist ) item ).getFade();
+      return ( ( Song ) item ).getDuration();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Item getType() {
-      return new Artist();
+    public Item getNewItem() {
+      return new Song();
+    }
+  },
+  /**
+   * Relates to the dance <b>and</b> energy for a given song.
+   */
+  DANCE_ENERGY
+  {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Comparator<Entry<Text, Item>> comparator() {
+      return (e1, e2) -> ( ( Song ) e1.getValue() ).getDancergy()
+          .compareTo( ( ( Song ) e2.getValue() ).getDancergy() );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void add(Item item, double value) {
+      if ( value != 0 )
+      {
+        ( ( Song ) item ).setDancergy( value );
+      }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isInvalid(Item item) {
+      return ( ( Song ) item ).getDancergy() != cs455.hadoop.items.Item.EPSILON;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Double getValue(Item item) {
+      return ( ( Song ) item ).getDancergy();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Item getNewItem() {
+      return new Song();
     }
   };
-
 }

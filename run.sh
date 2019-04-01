@@ -8,8 +8,8 @@ cat << EOF
     
     Usage: run.sh -[ 1 | 2 ] -c
 
-    -1 : Artist Questions Q1, Q2, and Q4
-    -2 : Song Questions Q3, Q5, and Q6
+    -1 : Song and Artist Questions Q1 - Q6
+    -2 : 
     
     -c : compile
     
@@ -30,18 +30,10 @@ SECOND_INPUT=""
 
 case "$1" in
     
--1) CLASS_JOB="artist"
+-1) CLASS_JOB="basic"
     SECOND_INPUT="/${HDFS_DATA}/analysis/"
     ;;
-
-    
--2) CLASS_JOB="song"
-    SECOND_INPUT="/${HDFS_DATA}/analysis/"
-    ;;
-    
--9) CLASS_JOB="artistmost"
-    ;;
-    
+   
 *) usage;
     ;;
     
