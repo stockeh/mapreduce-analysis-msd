@@ -7,6 +7,12 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import cs455.hadoop.util.DocumentUtilities;
 
+/**
+ * Mapper class for the analysis data files.
+ * 
+ * @author stock
+ *
+ */
 public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final Text songID = new Text();
@@ -18,7 +24,8 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
   /**
    * Expected Output:
    * 
-   * < song_id , hotness duration >
+   * < song_id , loudness fade_duration hotness duration danceability
+   * energy>
    * 
    */
   @Override
@@ -31,6 +38,10 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
     if ( id.length() > 0 )
     {
+      sb.append( itr.get( 10 ) ); // loudness
+      sb.append( "\t" );
+      sb.append( itr.get( 6 ) ); // fadeInDuration
+      sb.append( "\t" );
       sb.append( itr.get( 2 ) ); // hotness
       sb.append( "\t" );
       sb.append( itr.get( 5 ) ); // duration

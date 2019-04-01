@@ -73,10 +73,10 @@ public class DocumentUtilities {
    * @param descending true for descending, false for ascending
    * @return a new map of sorted <K, V> pairs.=
    */
-  public static Map<Text, Song> sortMapByValue(Map<Text, Song> map,
-      final SongData type, boolean descending) {
+  public static Map<Text, Item> sortMapByValue(Map<Text, Item> map,
+      final Data type, boolean descending) {
 
-    Comparator<Entry<Text, Song>> comparator = type.comparator();
+    Comparator<Entry<Text, Item>> comparator = type.comparator();
 
     if ( descending )
     {
@@ -95,15 +95,15 @@ public class DocumentUtilities {
    * @param key HashMap Key
    * @param value HashMap value for specified type
    */
-  public static void addSongData(Map<Text, Song> map, final SongData type,
-      Text key, double value) {
-    Song Song = map.get( key );
-    if ( Song == null )
+  public static void addData(Map<Text, Item> map, final Data type, Text key,
+      double value) {
+    Item item = map.get( key );
+    if ( item == null )
     {
-      Song = new Song();
-      map.put( key, Song );
+      item = type.getType();
+      map.put( key, item );
     }
-    type.add( Song, value );
+    type.add( item, value );
   }
 
   /**
@@ -161,20 +161,20 @@ public class DocumentUtilities {
    * @throws InterruptedException
    */
   @SuppressWarnings( { "rawtypes", "unchecked" } )
-  public static void writeMapToContext(Context context, Map<Text, Song> map,
-      final SongData type, int numElements)
+  public static void writeMapToContext(Context context, Map<Text, Item> map,
+      final Data type, int numElements)
       throws IOException, InterruptedException {
 
     int count = 0;
-    for ( Entry<Text, Song> entry : map.entrySet() )
+    for ( Entry<Text, Item> entry : map.entrySet() )
     {
-      Song song = entry.getValue();
-      if ( type.isInvalid( song ) )
+      Item item = entry.getValue();
+      if ( type.isInvalid( item ) )
       {
         if ( count++ < numElements )
         {
           context.write( entry.getKey(),
-              new DoubleWritable( type.getValue( song ) ) );
+              new DoubleWritable( type.getValue( item ) ) );
         } else
         {
           break;
@@ -182,5 +182,4 @@ public class DocumentUtilities {
       }
     }
   }
-
 }
