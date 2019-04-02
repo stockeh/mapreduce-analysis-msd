@@ -108,37 +108,6 @@ public class DocumentUtilities {
     }
   }
 
-  @SuppressWarnings( { "unchecked", "rawtypes" } )
-  public static void writePageRankToContext(Context context,
-      Map<String, ArtistRank> map, boolean descending, int numElements)
-      throws IOException, InterruptedException {
-
-    Comparator<Entry<String, ArtistRank>> comparator =
-        (e1, e2) -> ( ( ArtistRank ) e1.getValue() ).getRank()
-            .compareTo( ( ( ArtistRank ) e2.getValue() ).getRank() );
-
-    if ( descending )
-    {
-      comparator = Collections.reverseOrder( comparator );
-    }
-    Map<String, ArtistRank> sorted = map.entrySet().stream()
-        .sorted( comparator ).collect( Collectors.toMap( Map.Entry::getKey,
-            Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new ) );
-
-    int count = 0;
-    for ( ArtistRank entry : sorted.values() )
-    {
-      if ( count++ < numElements )
-      {
-        context.write( new Text( entry.getArtistName() ),
-            new DoubleWritable( entry.getRank() ) );
-      } else
-      {
-        break;
-      }
-    }
-  }
-
   /**
    * Write out the first <code>numElements</code> of a <code>Map</code>
    * to context.
