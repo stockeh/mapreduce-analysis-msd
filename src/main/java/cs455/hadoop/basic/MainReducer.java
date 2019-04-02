@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import cs455.hadoop.items.ArtistData;
 import cs455.hadoop.items.Data;
 import cs455.hadoop.items.Item;
+import cs455.hadoop.items.ArtistRank;
 import cs455.hadoop.items.Song;
 import cs455.hadoop.items.SongData;
 import cs455.hadoop.util.DocumentUtilities;
@@ -33,9 +35,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
 
   private static final Map<Text, Item> artists = new HashMap<>();
 
-  private static final Map<String, Double> ranks = new HashMap<>();
-
-  private static final Map<String, List<String>> links = new HashMap<>();
+  private static final Map<String, ArtistRank> links = new HashMap<>();
 
   /**
    * The mappers use the data's <b>song_id</b> to join the data as a
@@ -59,26 +59,28 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
     Text artistName = null;
 
     String artistID = null;
-    List<String> similarArtists = null;
+    List<String> similarArtistIDs = null;
 
     for ( Text v : values )
     {
       String[] elements = v.toString().split( "\t" );
 
-      if ( elements.length == 6 )
+      if ( elements.length == 7 )
       {
         loudness = DocumentUtilities.parseDouble( elements[ 0 ] );
-        fade = DocumentUtilities.parseDouble( elements[ 1 ] );
-        hotness = DocumentUtilities.parseDouble( elements[ 2 ] );
-        duration = DocumentUtilities.parseDouble( elements[ 3 ] );
-        dancergy = DocumentUtilities.parseDouble( elements[ 4 ] )
-            * DocumentUtilities.parseDouble( elements[ 5 ] );
+        duration = DocumentUtilities.parseDouble( elements[ 4 ] );
+        // TODO: Check , duration == 0 ? IDK : duration
+        fade = DocumentUtilities.parseDouble( elements[ 1 ] )
+            + ( duration - DocumentUtilities.parseDouble( elements[ 2 ] ) );
+        hotness = DocumentUtilities.parseDouble( elements[ 3 ] );
+        dancergy = DocumentUtilities.parseDouble( elements[ 5 ] )
+            * DocumentUtilities.parseDouble( elements[ 6 ] );
       } else
       {
         songTitle = new Text( elements[ 0 ] );
         artistName = new Text( elements[ 1 ] );
         artistID = elements[ 3 ];
-        similarArtists =
+        similarArtistIDs =
             new ArrayList<>( Arrays.asList( elements[ 2 ].split( "\\s+" ) ) );
       }
     }
@@ -87,29 +89,21 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
     {
       DocumentUtilities.addData( artists, ArtistData.TOTAL_SONGS, artistName,
           0 );
-
       DocumentUtilities.addData( artists, ArtistData.LOUDNESS, artistName,
           loudness );
-
       DocumentUtilities.addData( artists, ArtistData.FADE_DURATION, artistName,
           fade );
-
+      links.put( artistID,
+          new ArtistRank( artistName, similarArtistIDs, 1.0 ) );
     }
     if ( songTitle != null )
     {
       DocumentUtilities.addData( songs, SongData.HOTNESS, songTitle, hotness );
-
       DocumentUtilities.addData( songs, SongData.DURATION, songTitle,
           duration );
-
       DocumentUtilities.addData( songs, SongData.DANCE_ENERGY, songTitle,
           dancergy );
     }
-    ranks.put( artistID, 1.0 );
-    // Set first item in similarity list to artistName - this is excluded
-    // in computations, and just used for printing.
-    similarArtists.add( 0, artistName.toString() );
-    links.put( artistID, similarArtists );
   }
 
   /**
@@ -168,7 +162,21 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   }
 
   /**
-   * Compute page rank of artists and list of similar artists.
+   * Compute the modified page rank of artists and list of similar
+   * artists. This is done iteratively, by taking the following steps:
+   * 
+   * <ol>
+   * <li>join the links and ranks on artist_id. Ranks with outgoing
+   * artist_id's not in the rank keys are ignored.</li>
+   * <li>compute the contribution for each outgoing link by assigning
+   * the link to associated rank divided by the number of outgoing
+   * links. This is similar to reduce by key for each artist over all
+   * outgoing link.</li>
+   * <li>repeat steps 1. and 2. for each artist.</li>
+   * <li>update the ranks based on the contributions for all the
+   * artists. Then map the values to update the ranks.</li>
+   * <li>repeat steps 1. - 4. for N iterations</li>
+   * </ol>
    * 
    * @param context
    * @throws IOException
@@ -176,48 +184,69 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
    */
   private void pageRank(Context context)
       throws IOException, InterruptedException {
-    int iters = 10;
+    int N = 10;
 
-    while ( iters-- > 0 )
+    while ( N-- > 0 )
     {
+      /**
+       * Iterate.
+       */
       Map<String, Double> contrib = new HashMap<>();
-      for ( Entry<String, Double> entry : ranks.entrySet() )
+      for ( Entry<String, ArtistRank> entry : links.entrySet() )
       {
-        String key = entry.getKey();
-        List<String> urls = links.get( key );
-        List<String> modified = new ArrayList<>();
+        /**
+         * Step 1.
+         */
+        ArtistRank val = entry.getValue();
+        List<String> urls = val.getSimilarArtistIDs();
 
-        for ( String url : urls.subList( 1, urls.size() ) )
+        // Need modified values in case there are outgoing links that are do
+        // not exist in the set of keys from <code>links</code>.
+        List<String> modified = new ArrayList<>();
+        for ( String url : urls )
         {
-          if ( ranks.containsKey( url ) )
+          if ( links.containsKey( url ) )
           {
             modified.add( url );
           }
         }
-        Double contribValue = entry.getValue() / modified.size();
+
+        /**
+         * Step 2.
+         */
+        double contribValue = val.getRank() / modified.size();
 
         for ( String url : modified )
         {
           contrib.put( url, contrib.getOrDefault( url, 0.0 ) + contribValue );
         }
       }
-      for ( String key : ranks.keySet() )
+      /**
+       * Step 3.
+       */
+      for ( Entry<String, ArtistRank> entry : links.entrySet() )
       {
-        ranks.put( key, 0.15 + 0.85 * contrib.getOrDefault( key, -0.175 ) );
+        String key = entry.getKey();
+        ArtistRank val = entry.getValue();
+        val.updateRank( contrib.getOrDefault( key, -0.175 ) );
       }
     }
 
-    Map<String, Double> sorted = ranks.entrySet().stream()
-        .sorted( Collections.reverseOrder( Map.Entry.comparingByValue() ) )
+    Comparator<Entry<String, ArtistRank>> compartor =
+        (e1, e2) -> ( ( ArtistRank ) e1.getValue() ).getRank()
+            .compareTo( ( ( ArtistRank ) e2.getValue() ).getRank() );
+
+    Map<String, ArtistRank> sorted = links.entrySet().stream()
+        .sorted( Collections.reverseOrder( compartor ) )
         .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
             (e1, e2) -> e2, LinkedHashMap::new ) );
     int count = 0;
-    for ( Entry<String, Double> entry : sorted.entrySet() )
+    for ( ArtistRank entry : sorted.values() )
     {
       if ( count++ < 10 )
       {
-        context.write( new Text( links.get( entry.getKey() ).get( 0 ) ),
-            new DoubleWritable( entry.getValue() ) );
+        context.write( new Text( entry.getArtistName() ),
+            new DoubleWritable( entry.getRank() ) );
       } else
       {
         break;
@@ -246,6 +275,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   }
 
   /**
+   * Find the 10 songs that fall in the median for the corpus.
    * 
    * @param context
    * @throws IOException
@@ -267,8 +297,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
       if ( index - 5 > median )
       {
         break;
-      }
-      if ( index + 5 > median )
+      } else if ( index + 5 > median )
       {
         Item item = entry.getValue();
         if ( type.isInvalid( item ) )
@@ -285,8 +314,8 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   }
 
   /**
-   * Find and display the 10 songs surrounding the average and median
-   * song duration.
+   * Find and display the 10 songs surrounding the average song
+   * duration.
    * 
    * @param context
    * @throws IOException
