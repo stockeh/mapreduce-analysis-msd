@@ -1,9 +1,15 @@
 package cs455.hadoop.basic;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -27,6 +33,10 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
 
   private static final Map<Text, Item> artists = new HashMap<>();
 
+  private static final Map<String, Double> ranks = new HashMap<>();
+
+  private static final Map<String, List<String>> links = new HashMap<>();
+
   /**
    * The mappers use the data's <b>song_id</b> to join the data as a
    * <code>Text key</code>. The values are arranged in no particular
@@ -48,6 +58,9 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
     Text songTitle = null;
     Text artistName = null;
 
+    String artistID = null;
+    List<String> similarArtists = null;
+
     for ( Text v : values )
     {
       String[] elements = v.toString().split( "\t" );
@@ -64,6 +77,9 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
       {
         songTitle = new Text( elements[ 0 ] );
         artistName = new Text( elements[ 1 ] );
+        artistID = elements[ 3 ];
+        similarArtists =
+            new ArrayList<>( Arrays.asList( elements[ 2 ].split( "\\s+" ) ) );
       }
     }
 
@@ -77,6 +93,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
 
       DocumentUtilities.addData( artists, ArtistData.FADE_DURATION, artistName,
           fade );
+
     }
     if ( songTitle != null )
     {
@@ -88,6 +105,11 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
       DocumentUtilities.addData( songs, SongData.DANCE_ENERGY, songTitle,
           dancergy );
     }
+    ranks.put( artistID, 1.0 );
+    // Set first item in similarity list to artistName - this is excluded
+    // in computations, and just used for printing.
+    similarArtists.add( 0, artistName.toString() );
+    links.put( artistID, similarArtists );
   }
 
   /**
@@ -132,10 +154,75 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
     context.write( new Text( "\n----AVERAGE----" ), new DoubleWritable() );
     songDurationAverage( context );
 
+    context.write( new Text( "\n----MEDIAN----" ), new DoubleWritable() );
+    songDurationMedian( context );
+
     context.write( new Text( "\n----Q6. MOST ENERGETIC AND DANCEABILE SONGS" ),
         new DoubleWritable() );
     top( context, songs, SongData.DANCE_ENERGY, true );
 
+    context.write( new Text( "\n----Q8. MOST GENERIC / UNIQUE ARTIST" ),
+        new DoubleWritable() );
+    pageRank( context );
+
+  }
+
+  /**
+   * Compute page rank of artists and list of similar artists.
+   * 
+   * @param context
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  private void pageRank(Context context)
+      throws IOException, InterruptedException {
+    int iters = 10;
+
+    while ( iters-- > 0 )
+    {
+      Map<String, Double> contrib = new HashMap<>();
+      for ( Entry<String, Double> entry : ranks.entrySet() )
+      {
+        String key = entry.getKey();
+        List<String> urls = links.get( key );
+        List<String> modified = new ArrayList<>();
+
+        for ( String url : urls.subList( 1, urls.size() ) )
+        {
+          if ( ranks.containsKey( url ) )
+          {
+            modified.add( url );
+          }
+        }
+        Double contribValue = entry.getValue() / modified.size();
+
+        for ( String url : modified )
+        {
+          contrib.put( url, contrib.getOrDefault( url, 0.0 ) + contribValue );
+        }
+      }
+      for ( String key : ranks.keySet() )
+      {
+        ranks.put( key, 0.15 + 0.85 * contrib.getOrDefault( key, -0.175 ) );
+      }
+    }
+
+    Map<String, Double> sorted = ranks.entrySet().stream()
+        .sorted( Collections.reverseOrder( Map.Entry.comparingByValue() ) )
+        .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
+            (e1, e2) -> e2, LinkedHashMap::new ) );
+    int count = 0;
+    for ( Entry<String, Double> entry : sorted.entrySet() )
+    {
+      if ( count++ < 10 )
+      {
+        context.write( new Text( links.get( entry.getKey() ).get( 0 ) ),
+            new DoubleWritable( entry.getValue() ) );
+      } else
+      {
+        break;
+      }
+    }
   }
 
   /**
@@ -159,8 +246,47 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   }
 
   /**
-   * Find and display the 10 songs surrounding the average song
-   * duration.
+   * 
+   * @param context
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  private void songDurationMedian(Context context)
+      throws IOException, InterruptedException {
+
+    final Data type = SongData.DURATION;
+
+    final int median = ( int ) Song.totalSongsOfDuration / 2;
+
+    final Map<Text, Item> sorted =
+        DocumentUtilities.sortMapByValue( songs, type, true );
+
+    int index = 0;
+    for ( Entry<Text, Item> entry : sorted.entrySet() )
+    {
+      if ( index - 5 > median )
+      {
+        break;
+      }
+      if ( index + 5 > median )
+      {
+        Item item = entry.getValue();
+        if ( type.isInvalid( item ) )
+        {
+          context.write( entry.getKey(),
+              new DoubleWritable( type.getValue( item ) ) );
+        } else
+        {
+          index--;
+        }
+      }
+      index++;
+    }
+  }
+
+  /**
+   * Find and display the 10 songs surrounding the average and median
+   * song duration.
    * 
    * @param context
    * @throws IOException
@@ -174,6 +300,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
         new DoubleWritable( average ) );
 
     final Data type = SongData.DURATION;
+
     Map<Text, Item> averageMap = new HashMap<>();
 
     for ( Entry<Text, Item> entry : songs.entrySet() )
