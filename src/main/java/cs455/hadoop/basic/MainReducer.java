@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Reducer.Context;
 import cs455.hadoop.items.ArtistData;
 import cs455.hadoop.items.Data;
 import cs455.hadoop.items.Item;
@@ -85,28 +86,22 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
       }
     }
 
-    if ( artistName != null )
-    {
-      Text ID = new Text( artistID );
-      DocumentUtilities.addData( artists, ArtistData.TOTAL_SONGS, artistName,
-          ID, 0 );
-      DocumentUtilities.addData( artists, ArtistData.LOUDNESS, artistName, ID,
-          loudness );
-      DocumentUtilities.addData( artists, ArtistData.FADE_DURATION, artistName,
-          ID, fade );
-      links.put( artistID,
-          new ArtistRank( artistName, similarArtistIDs, 1.0 ) );
-    }
-    if ( songTitle != null )
-    {
-      Text ID = new Text( key );
-      DocumentUtilities.addData( songs, SongData.HOTNESS, songTitle, ID,
-          hotness );
-      DocumentUtilities.addData( songs, SongData.DURATION, songTitle, ID,
-          duration );
-      DocumentUtilities.addData( songs, SongData.DANCE_ENERGY, songTitle, ID,
-          dancergy );
-    }
+    Text ID = new Text( artistID );
+    DocumentUtilities.addData( artists, ArtistData.TOTAL_SONGS, artistName, ID,
+        0 );
+    DocumentUtilities.addData( artists, ArtistData.LOUDNESS, artistName, ID,
+        loudness );
+    DocumentUtilities.addData( artists, ArtistData.FADE_DURATION, artistName,
+        ID, fade );
+    links.put( artistID, new ArtistRank( artistName, similarArtistIDs, 1.0 ) );
+
+    Text songID = new Text( key );
+    DocumentUtilities.addData( songs, SongData.HOTNESS, songTitle, songID,
+        hotness );
+    DocumentUtilities.addData( songs, SongData.DURATION, songTitle, songID,
+        duration );
+    DocumentUtilities.addData( songs, SongData.DANCE_ENERGY, songTitle, songID,
+        dancergy );
   }
 
   /**
@@ -158,7 +153,8 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
         new DoubleWritable() );
     top( context, songs, SongData.DANCE_ENERGY, true );
 
-    context.write( new Text( "\n----Q8. MOST GENERIC / UNIQUE ARTIST" ),
+    context.write(
+        new Text( "\n----Q8. MOST GENERIC & UNIQUE ARTIST BY PAGERANK" ),
         new DoubleWritable() );
     pageRank( context );
 
@@ -234,19 +230,44 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
         val.updateRank( contrib.getOrDefault( key, -0.175 ) );
       }
     }
+    context.write( new Text( "\n----GENERIC----" ), new DoubleWritable() );
+    writePageRankToContext( context, links, true, 10 );
 
-    Comparator<Entry<String, ArtistRank>> compartor =
+    context.write( new Text( "\n----UNIQUE----" ), new DoubleWritable() );
+    writePageRankToContext( context, links, false, 10 );
+  }
+
+  /**
+   * Custom writer to sort the links of the page rank results
+   * accordingly, then write out the results to context.
+   * 
+   * @param context
+   * @param map
+   * @param descending
+   * @param numElements
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  public static void writePageRankToContext(Context context,
+      Map<String, ArtistRank> map, boolean descending, int numElements)
+      throws IOException, InterruptedException {
+
+    Comparator<Entry<String, ArtistRank>> comparator =
         (e1, e2) -> ( ( ArtistRank ) e1.getValue() ).getRank()
             .compareTo( ( ( ArtistRank ) e2.getValue() ).getRank() );
 
-    Map<String, ArtistRank> sorted = links.entrySet().stream()
-        .sorted( Collections.reverseOrder( compartor ) )
-        .collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue,
-            (e1, e2) -> e2, LinkedHashMap::new ) );
+    if ( descending )
+    {
+      comparator = Collections.reverseOrder( comparator );
+    }
+    Map<String, ArtistRank> sorted = map.entrySet().stream()
+        .sorted( comparator ).collect( Collectors.toMap( Map.Entry::getKey,
+            Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new ) );
+
     int count = 0;
     for ( ArtistRank entry : sorted.values() )
     {
-      if ( count++ < 10 )
+      if ( count++ < numElements )
       {
         context.write( new Text( entry.getArtistName() ),
             new DoubleWritable( entry.getRank() ) );
