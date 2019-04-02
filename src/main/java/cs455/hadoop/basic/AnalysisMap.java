@@ -42,6 +42,8 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       sb.append( "\t" );
       sb.append( itr.get( 6 ) ); // fadeInDuration
       sb.append( "\t" );
+      sb.append( itr.get( 13 ) ); // startFadeOutTime
+      sb.append( "\t" );
       sb.append( itr.get( 2 ) ); // hotness
       sb.append( "\t" );
       sb.append( itr.get( 5 ) ); // duration

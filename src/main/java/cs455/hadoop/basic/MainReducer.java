@@ -65,14 +65,16 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
     {
       String[] elements = v.toString().split( "\t" );
 
-      if ( elements.length == 6 )
+      if ( elements.length == 7 )
       {
         loudness = DocumentUtilities.parseDouble( elements[ 0 ] );
-        fade = DocumentUtilities.parseDouble( elements[ 1 ] );
-        hotness = DocumentUtilities.parseDouble( elements[ 2 ] );
-        duration = DocumentUtilities.parseDouble( elements[ 3 ] );
-        dancergy = DocumentUtilities.parseDouble( elements[ 4 ] )
-            * DocumentUtilities.parseDouble( elements[ 5 ] );
+        duration = DocumentUtilities.parseDouble( elements[ 4 ] );
+        // TODO: Check , duration == 0 ? IDK : duration
+        fade = DocumentUtilities.parseDouble( elements[ 1 ] )
+            + ( duration - DocumentUtilities.parseDouble( elements[ 2 ] ) );
+        hotness = DocumentUtilities.parseDouble( elements[ 3 ] );
+        dancergy = DocumentUtilities.parseDouble( elements[ 5 ] )
+            * DocumentUtilities.parseDouble( elements[ 6 ] );
       } else
       {
         songTitle = new Text( elements[ 0 ] );
@@ -91,7 +93,8 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
           loudness );
       DocumentUtilities.addData( artists, ArtistData.FADE_DURATION, artistName,
           fade );
-      links.put( artistID, new ArtistRank( artistName, similarArtistIDs, 1.0 ) );
+      links.put( artistID,
+          new ArtistRank( artistName, similarArtistIDs, 1.0 ) );
     }
     if ( songTitle != null )
     {
