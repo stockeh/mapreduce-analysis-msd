@@ -1,5 +1,7 @@
 package cs455.hadoop.items;
 
+import org.apache.hadoop.io.Text;
+
 /**
  * Class representing information regarding a song.
  * 
@@ -22,9 +24,19 @@ public class Song implements Item {
 
   private Double dancergy = new Double( EPSILON );
 
+  private Text name;
+
   public static double totalDuration = 0;
 
   public static double totalSongsOfDuration = 0;
+
+  public Song(Text name) {
+    this.name = name;
+  }
+
+  public Text getName() {
+    return this.name;
+  }
 
   /**
    * 

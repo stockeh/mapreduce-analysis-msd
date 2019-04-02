@@ -58,8 +58,8 @@ public enum SongData implements Data {
      * {@inheritDoc}
      */
     @Override
-    public Item getNewItem() {
-      return new Song();
+    public Item getNewItem(Text name) {
+      return new Song(name);
     }
   },
   /**
@@ -107,8 +107,8 @@ public enum SongData implements Data {
      * {@inheritDoc}
      */
     @Override
-    public Item getNewItem() {
-      return new Song();
+    public Item getNewItem(Text name) {
+      return new Song(name);
     }
   },
   /**
@@ -156,8 +156,8 @@ public enum SongData implements Data {
      * {@inheritDoc}
      */
     @Override
-    public Item getNewItem() {
-      return new Song();
+    public Item getNewItem(Text name) {
+      return new Song(name);
     }
   };
 }

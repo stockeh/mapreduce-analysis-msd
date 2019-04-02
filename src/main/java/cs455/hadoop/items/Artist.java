@@ -1,5 +1,7 @@
 package cs455.hadoop.items;
 
+import org.apache.hadoop.io.Text;
+
 /**
  * Class representing information regarding an artist.
  * 
@@ -25,6 +27,17 @@ public class Artist implements Item {
 
   private Double totalSongs = new Double( 0 );
 
+  private Text name;
+
+  public Artist(Text name)
+  {
+    this.name = name;
+  }
+  
+  public Text getName() {
+    return this.name;
+  }
+  
   /**
    *
    * @return the average loudness for this artist

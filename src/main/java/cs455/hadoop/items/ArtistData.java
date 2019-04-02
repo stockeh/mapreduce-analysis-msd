@@ -55,8 +55,8 @@ public enum ArtistData implements Data {
      * {@inheritDoc}
      */
     @Override
-    public Item getNewItem() {
-      return new Artist();
+    public Item getNewItem(Text name) {
+      return new Artist(name);
     }
   },
   /**
@@ -105,8 +105,8 @@ public enum ArtistData implements Data {
      * {@inheritDoc}
      */
     @Override
-    public Item getNewItem() {
-      return new Artist();
+    public Item getNewItem(Text name) {
+      return new Artist(name);
     }
   },
   /**
@@ -155,8 +155,8 @@ public enum ArtistData implements Data {
      * {@inheritDoc}
      */
     @Override
-    public Item getNewItem() {
-      return new Artist();
+    public Item getNewItem(Text name) {
+      return new Artist(name);
     }
   };
 

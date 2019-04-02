@@ -74,16 +74,17 @@ public class DocumentUtilities {
    * 
    * @param map HashMap containing values
    * @param type type of data
+   * @param name association with the specified key
    * @param key HashMap Key
    * @param value HashMap value for specified type
    */
-  public static void addData(Map<Text, Item> map, final Data type, Text key,
-      double value) {
+  public static void addData(Map<Text, Item> map, final Data type, Text name,
+      Text key, double value) {
 
     Item item = map.get( key );
     if ( item == null )
     {
-      item = type.getNewItem();
+      item = type.getNewItem( name );
       map.put( key, item );
     }
     type.add( item, value );
@@ -129,7 +130,7 @@ public class DocumentUtilities {
       {
         if ( count++ < numElements )
         {
-          context.write( entry.getKey(),
+          context.write( item.getName(),
               new DoubleWritable( type.getValue( item ) ) );
         } else
         {

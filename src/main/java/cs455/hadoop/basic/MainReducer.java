@@ -87,21 +87,24 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
 
     if ( artistName != null )
     {
+      Text ID = new Text( artistID );
       DocumentUtilities.addData( artists, ArtistData.TOTAL_SONGS, artistName,
-          0 );
-      DocumentUtilities.addData( artists, ArtistData.LOUDNESS, artistName,
+          ID, 0 );
+      DocumentUtilities.addData( artists, ArtistData.LOUDNESS, artistName, ID,
           loudness );
       DocumentUtilities.addData( artists, ArtistData.FADE_DURATION, artistName,
-          fade );
+          ID, fade );
       links.put( artistID,
           new ArtistRank( artistName, similarArtistIDs, 1.0 ) );
     }
     if ( songTitle != null )
     {
-      DocumentUtilities.addData( songs, SongData.HOTNESS, songTitle, hotness );
-      DocumentUtilities.addData( songs, SongData.DURATION, songTitle,
+      Text ID = new Text( key );
+      DocumentUtilities.addData( songs, SongData.HOTNESS, songTitle, ID,
+          hotness );
+      DocumentUtilities.addData( songs, SongData.DURATION, songTitle, ID,
           duration );
-      DocumentUtilities.addData( songs, SongData.DANCE_ENERGY, songTitle,
+      DocumentUtilities.addData( songs, SongData.DANCE_ENERGY, songTitle, ID,
           dancergy );
     }
   }
@@ -302,7 +305,7 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
         Item item = entry.getValue();
         if ( type.isInvalid( item ) )
         {
-          context.write( entry.getKey(),
+          context.write( item.getName(),
               new DoubleWritable( type.getValue( item ) ) );
         } else
         {
