@@ -61,6 +61,6 @@ public interface Data {
    * @return a new <code>Item</code> relating to a <code>Song</code> or
    *         <code>Artist</code> object
    */
-  public Item getNewItem();
+  public Item getNewItem(Text name);
 
 }

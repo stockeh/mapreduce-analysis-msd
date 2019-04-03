@@ -1,10 +1,10 @@
 #!/bin/bash
 
 JAR_FILE="mapreduce-analysis-msd.jar"
-# Shared HDFS : data
-HDFS_DATA="local"
-# Shared HDFS : /home/out
-OUT_DIR="/out"
+# Shared HDFS : data, local HDFS : local
+HDFS_DATA="data"
+# Shared HDFS : /home/out, local HDFS: /out
+OUT_DIR="/home/out"
 
 function usage {
 cat << EOF
@@ -48,7 +48,7 @@ echo Project has "$LINES" lines
 
 # Connect to shared HDFS
 # 
-# export HADOOP_CONF_DIR=${HOME}/cs455/mapreduce/client-config
+export HADOOP_CONF_DIR=${HOME}/cs455/mapreduce/client-config
 # 
 $HADOOP_HOME/bin/hadoop fs -rm -R ${OUT_DIR}/${CLASS_JOB} ||: \
 && $HADOOP_HOME/bin/hadoop jar build/libs/${JAR_FILE} cs455.hadoop.${CLASS_JOB}.MainJob \

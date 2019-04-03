@@ -1,5 +1,7 @@
 package cs455.hadoop.items;
 
+import org.apache.hadoop.io.Text;
+
 public interface Item {
 
   /**
@@ -12,6 +14,8 @@ public interface Item {
    * data contains 0, and if desired, will be used ( in the data ).
    */
   public static final double EPSILON = 1e-5;
+
+  public Text getName();
 
   /**
    * Implemented method for converting this class to a readable String.
