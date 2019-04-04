@@ -5,11 +5,11 @@ repositories {
 }
 
 dependencies {
-  compile group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.1.2'
-}
-
-dependencies {
-  compile group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.1.2'
+  compile (
+  	[group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.1.2'],
+  	[group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.1.2'],
+  	[group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1']
+  	)
 }
 
 jar {
