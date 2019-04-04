@@ -2,7 +2,7 @@
 
 JAR_FILE="mapreduce-analysis-msd.jar"
 
-# LOCAL HDFS :
+# LOCAL HDFS:
 
 HDFS_DATA="local"
 OUT_DIR="/out"
