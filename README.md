@@ -47,8 +47,8 @@ There were various questions that come to mind when analyzing the dataset. I see
     - Unique: Kuti, Brutal Deluxe, Lennox Brown
 8. Create a song with a higher popularity score than that found in the dataset.  
 
-hotness | duration | end_fade_in | key | loudness | mode | start_fade_out | tempo | time_sign 
+**hotness** | duration | end_fade_in | key | loudness | mode | start_fade_out | tempo | time_sign 
 ---|---|---|---|---|---|---|---|---
-1.155 | 580.307 | 4.463 | 3.721 | -0.0871 | -1.293 | -518.386 | 171.054 | -0.318
+**1.155** | 580.307 | 4.463 | 3.721 | -0.0871 | -1.293 | -518.386 | 171.054 | -0.318
 
 These questions continue to evolve as a greater analysis is achieved...
