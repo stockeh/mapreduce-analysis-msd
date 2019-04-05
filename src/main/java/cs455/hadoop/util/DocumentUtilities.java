@@ -7,11 +7,12 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.PrimitiveIterator;
+import java.util.Random;
 import java.util.stream.Collectors;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer.Context;
-import cs455.hadoop.items.ArtistRank;
 import cs455.hadoop.items.Data;
 import cs455.hadoop.items.Item;
 
@@ -140,4 +141,34 @@ public class DocumentUtilities {
       }
     }
   }
+
+  /**
+   * Creates a new random number generator for doubles
+   * 
+   * @author stock
+   *
+   */
+  public final static class RandomDoubleGenerator {
+
+    private PrimitiveIterator.OfDouble iterator;
+
+    /**
+     * Initializes the iterator to hold random numbers
+     * 
+     * @param min lower bound (inclusive)
+     * @param max upper bound (exclusive)
+     */
+    public RandomDoubleGenerator(double min, double max) {
+      iterator = new Random().doubles( min, max ).iterator();
+    }
+
+    /**
+     * 
+     * @return a random number in the specified range
+     */
+    public double nextDouble() {
+      return iterator.nextDouble();
+    }
+  }
+
 }

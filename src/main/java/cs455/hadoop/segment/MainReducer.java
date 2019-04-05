@@ -1,4 +1,4 @@
-package cs455.hadoop.aggregate;
+package cs455.hadoop.segment;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,7 +9,6 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import cs455.hadoop.util.DocumentUtilities;
-import cs455.hadoop.util.DocumentUtilities.RandomDoubleGenerator;
 
 /**
  * Reducer class that takes the output from the mapper and organizes
@@ -79,84 +78,45 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
     double[][] X = new double[ ITEMS.size() ][];
     double[] T = HOT.stream().mapToDouble( Double::doubleValue ).toArray();
 
-    int count = 0;
+    int i = 0;
     for ( List<Double> arr : ITEMS )
     {
-      X[ count++ ] = arr.stream().mapToDouble( Double::doubleValue ).toArray();
+      X[ i++ ] = arr.stream().mapToDouble( Double::doubleValue ).toArray();
     }
+
     OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+
     regression.newSampleData( T, X );
-    double[] a = search( context, regression, X, T );
-  }
 
-  private double[] search(Context context,
-      OLSMultipleLinearRegression regression, double[][] X, double[] T)
-      throws IOException, InterruptedException {
-
-    DocumentUtilities.RandomDoubleGenerator generator =
-        new RandomDoubleGenerator( -2, 2 );
-
-    final int nItems = X[ 0 ].length;
-    final int nSamples = 10;
-
-    double[][] samples = new double[ nSamples ][ nItems ];
-
-    int loc = 0;
-    for ( int i = 0; i < T.length; i++ )
-    {
-      if ( T[ i ] == 1.0 )
-      {
-        samples[ loc++ ] = X[ i ];
-        context.write(
-            new Text(
-                "\n----SAMPLE: " + Arrays.toString( samples[ loc - 1 ] ) ),
-            new DoubleWritable( T[ i ] ) );
-      }
-      if ( loc == nSamples )
-      {
-        break;
-      }
-    }
-    double[] Xn = new double[ nItems ];
-    double[] beta = regression.estimateRegressionParameters();
-    double hotness = 0;
-    boolean done = false;
-    while ( !done )
-    {
-      for ( int s = 0; s < nSamples; ++s )
-      {
-        for ( int i = 0; i < nItems; ++i )
-        {
-          Xn[ i ] = samples[ s ][ i ] * generator.nextDouble();
-        }
-        hotness = use( context, beta, Xn );
-        if ( hotness > 1 )
-        {
-          done = true;
-          break;
-        }
-      }
-    }
-    context.write( new Text( "\n----WEIGHTS: " + Arrays.toString( beta ) ),
+    context.write( new Text( "\n---- len: " + X.length + " " + T.length ),
         new DoubleWritable() );
 
-    context.write( new Text( "\n----SAMPLE: " + Arrays.toString( Xn ) ),
-        new DoubleWritable( hotness ) );
-
-    // for ( int s = 0; s < nSamples; ++s )
+    // for ( int m = 0; m < T.length; m++ )
     // {
-    // double hotness = use( context, beta, samples[ s ] );
-    //
-    // context.write( new Text( "\n----SAMPLE: "
-    // + Arrays.toString( samples[ s ] ) + ",\tPredicted:" ),
-    // new DoubleWritable( hotness ) );
-    //
+    // context.write( new Text( "\n----: " + Arrays.toString( X[ m ] ) ),
+    // new DoubleWritable( T[ m ] ) );
     // }
-    return Xn;
+
+    double[] Xn = X[ 4 ];
+    double Tn = T[ 4 ];
+
+    double Yn = use( context, regression, Xn );
+
+    context.write( new Text( "\n---- " + Arrays.toString( Xn ) + ",\tActual: "
+        + Tn + ",\tPredicted:" ), new DoubleWritable( Yn ) );
   }
 
-  private double use(Context context, double[] beta, double[] X)
-      throws IOException, InterruptedException {
+  public double use(Context context, OLSMultipleLinearRegression regression,
+      double[] X) throws IOException, InterruptedException {
+    if ( regression == null )
+    {
+      throw new IllegalArgumentException(
+          "regression is not intialized, null." );
+    }
+    double[] beta = regression.estimateRegressionParameters();
+    context.write( new Text( "\n---- " + Arrays.toString( beta ) ),
+        new DoubleWritable() );
+
     // intercept at beta[0]
     double prediction = beta[ 0 ];
     for ( int i = 1; i < beta.length; i++ )
