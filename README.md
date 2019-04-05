@@ -32,7 +32,7 @@ There were various questions that come to mind when analyzing the dataset. I see
     - Halfway Gone, 1.0
     - Love Story, 1.0
 4. Which artist has the highest total time spent fading in their songs?
-    - 50 CENT ft. MURDA MASS_ YOUNG BUCK & SPIDER LOC, 40.5 minutes
+    - 50 Cent ft. Murda Mass Young Buck & Spider Loc, 40.5 minutes
     - Vincent Bruley, 39.1 minutes
     - Melvins, 37.7 minutes
 5. What is the longest song(s)? The shortest song(s)? The song(s) of median length? The song(s) of mean length?
