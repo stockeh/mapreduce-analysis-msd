@@ -1,5 +1,5 @@
 # Distributed Computing
-**Using Mapreduce to Analyze the Million Song Dataset**
+**Using MapReduce to Analyze the Million Song Dataset**
 
 This project focuses on using Apache Hadoop ( version 3.1.2 ) to develop MapReduce programs that parse and process song analyses and metadata to answer related questions about the songs and artist.
 
