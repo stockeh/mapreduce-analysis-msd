@@ -41,7 +41,7 @@ There were various questions that come to mind when analyzing the dataset. I see
     - Median: Step Ya Game Up (Remix), 3.8 minutes
     - Mean: You Put a Spell on Me, 4.1 minutes
 6. Create *new* segment data for the average song. Including start time, pitch, timbre, max loudness, max loudness time, and start loudness.
-    - 
+    - ...
 7. Which artist(s) is the most generic? Which artist(s) is the most unique?
     - Generic: The Rolling Stones, The Beatles, The Fairfield Four
     - Unique: Kuti, Brutal Deluxe, Lennox Brown
