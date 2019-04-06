@@ -48,28 +48,17 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
     if ( !id.isEmpty() && hot != 0 )
     {
-      sb.append( hotness ); // hotness
-      sb.append( "\t" );
-      // sb.append( itr.get( 4 ) ); // danceability
-      // sb.append( "\t" );
-      sb.append( itr.get( 5 ) ); // duration
-      sb.append( "\t" );
-      sb.append( itr.get( 6 ) ); // fade_in
-      sb.append( "\t" );
-      // sb.append( itr.get( 7 ) ); // energy
-      // sb.append( "\t" );
-      sb.append( itr.get( 8 ) ); // key
-      sb.append( "\t" );
-      sb.append( itr.get( 10 ) ); // loudness
-      sb.append( "\t" );
-      sb.append( itr.get( 11 ) ); // mode
-      sb.append( "\t" );
-      sb.append( itr.get( 13 ) ); // fade_out
-      sb.append( "\t" );
-      sb.append( itr.get( 14 ) ); // tempo
-      sb.append( "\t" );
-      sb.append( itr.get( 15 ) ); // time_signature
-      sb.append( " " );
+      sb.append( hotness ).append( "\t" ); // hotness
+      // sb.append( itr.get( 4 ) ).append( "\t" ); // danceability
+      sb.append( itr.get( 5 ) ).append( "\t" ); // duration
+      sb.append( itr.get( 6 ) ).append( "\t" ); // fade_in
+      // sb.append( itr.get( 7 ) ).append( "\t" ); // energy
+      sb.append( itr.get( 8 ) ).append( "\t" ); // key
+      sb.append( itr.get( 10 ) ).append( "\t" ); // loudness
+      sb.append( itr.get( 11 ) ).append( "\t" ); // mode
+      sb.append( itr.get( 13 ) ).append( "\t" ); // fade_out
+      sb.append( itr.get( 14 ) ).append( "\t" ); // tempo
+      sb.append( itr.get( 15 ) ).append( " " ); // time_signature
 
       songID.set( id );
       outputValue.set( sb.toString() );
