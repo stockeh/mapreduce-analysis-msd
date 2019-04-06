@@ -17,14 +17,12 @@ public class MetadataMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final Text songID = new Text();
 
-  private final Text outputValue = new Text();
-
-  private final StringBuilder sb = new StringBuilder();
+  private final Text artistTerms = new Text();
 
   /**
    * Expected Output:
    * 
-   * < song_id , terms_descriptions_freq terms_descriptions_weight >
+   * < song_id , artist_terms >
    * 
    */
   @Override
@@ -37,17 +35,10 @@ public class MetadataMap extends Mapper<LongWritable, Text, Text, Text> {
 
     if ( !id.isEmpty() )
     {
-
-      sb.append( itr.get( 12 ) ); // terms_descriptions_freq
-      sb.append( "\t" );
-      sb.append( itr.get( 13 ).trim() ); // terms_descriptions_weight
-      sb.append( " " );
-      
       songID.set( id );
-      outputValue.set( sb.toString() );
-      sb.setLength( 0 );
+      artistTerms.set( itr.get( 11 ) ); // artist_terms
 
-      context.write( songID, outputValue );
+      context.write( songID, artistTerms );
     }
   }
 }
