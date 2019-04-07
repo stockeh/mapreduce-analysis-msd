@@ -58,7 +58,7 @@ public class MainJob {
       job.setMapOutputKeyClass( Text.class );
       job.setMapOutputValueClass( Text.class );
       job.setOutputKeyClass( Text.class );
-      job.setOutputValueClass( DoubleWritable.class );
+      job.setOutputValueClass( Text.class );
 
       MultipleInputs.addInputPath( job, new Path( args[ 0 ] ),
           TextInputFormat.class, MetadataMap.class );
