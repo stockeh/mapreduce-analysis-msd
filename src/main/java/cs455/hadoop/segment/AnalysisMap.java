@@ -36,18 +36,14 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       throws IOException, InterruptedException {
 
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
-    // TODO: REMOVE THIS
-    if ( itr.size() > 24 )
+    for ( int i = 0; i < INDICES.length; i++ )
     {
-      for ( int i = 0; i < INDICES.length; i++ )
+      String val = itr.get( INDICES[ i ] ).trim();
+      if ( !val.isEmpty() )
       {
-        String val = itr.get( INDICES[ i ] ).trim();
-        if ( !val.isEmpty() )
-        {
-          ID.set( KEYS[ i ] );
-          OUTPUT.set( val );
-          context.write( ID, OUTPUT );
-        }
+        ID.set( KEYS[ i ] );
+        OUTPUT.set( val );
+        context.write( ID, OUTPUT );
       }
     }
   }
