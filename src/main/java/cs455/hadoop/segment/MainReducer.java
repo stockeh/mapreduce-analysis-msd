@@ -2,10 +2,8 @@ package cs455.hadoop.segment;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
-import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import cs455.hadoop.util.DocumentUtilities;
@@ -17,11 +15,12 @@ import cs455.hadoop.util.DocumentUtilities;
  * @author stock
  *
  */
-public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
+public class MainReducer extends Reducer<Text, Text, Text, Text> {
 
-  public static final List<Double> HOT = new ArrayList<>();
+  public static final List<String[]> ITEMS = new ArrayList<>();
 
-  public static final List<List<Double>> ITEMS = new ArrayList<>();
+  public static final DoubleSummaryStatistics movingAverage =
+      new DoubleSummaryStatistics();
 
   /**
    * The mappers use the data's <b>song_id</b> to join the data as a
@@ -35,95 +34,56 @@ public class MainReducer extends Reducer<Text, Text, Text, DoubleWritable> {
   protected void reduce(Text key, Iterable<Text> values, Context context)
       throws IOException, InterruptedException {
 
-    int it = 0;
-
-    List<Double> item = new ArrayList<>();
-    double hotness = 0;
-
-    @SuppressWarnings( "unused" )
-    String[] termFrequency = null;
-    @SuppressWarnings( "unused" )
-    String[] termWeight = null;
-
-    for ( Text v : values )
+    for ( Text val : values )
     {
-      String[] elements = v.toString().split( "\t" );
+      String[] item = val.toString().split( "\\s+" );
+      ITEMS.add( item );
+      movingAverage.accept( item.length );
+    }
 
-      if ( elements.length == 9 )
+    double[] averaged = computeAverage();
+    StringBuilder sb = new StringBuilder();
+
+    for ( int i = 0; i < averaged.length; ++i )
+    {
+      sb.append( averaged[ i ] ).append( " " );
+    }
+    context.write( key, new Text( sb.toString() + "\n" ) );
+  }
+
+  private double[] computeAverage() {
+    int average = ( int ) Math.round( movingAverage.getAverage() );
+    double[] fin = new double[ average ];
+    int[] indexSize = new int[ average ];
+
+    for ( int i = 0; i < ITEMS.size(); ++i )
+    {
+      String[] item = ITEMS.get( i );
+      int len = item.length;
+      if ( len >= average )
       {
-        hotness = DocumentUtilities.parseDouble( elements[ 0 ] );
-        for ( int i = 1; i < elements.length; i++ )
+        int stride = len / average;
+        for ( int j = 0; j < average; ++j )
         {
-          item.add( DocumentUtilities.parseDouble( elements[ i ] ) );
+          fin[ j ] = updateAverage( fin[ j ], indexSize[ j ]++,
+              DocumentUtilities.parseDouble( item[ j * stride ] ) );
         }
-        ++it;
       } else
       {
-        termFrequency = elements[ 0 ].trim().split( "\\s+" );
-        termWeight = elements[ 1 ].trim().split( "\\s+" );
-        ++it;
+        int stride = average / len;
+        for ( int j = 0; j < len; ++j )
+        {
+          fin[ j * stride ] =
+              updateAverage( fin[ j * stride ], indexSize[ j * stride ]++,
+                  DocumentUtilities.parseDouble( item[ j ] ) );
+        }
       }
     }
-    if ( it == 2 && item.size() == 8 )
-    {
-      HOT.add( hotness );
-      ITEMS.add( item );
-    }
+    return fin;
   }
 
-  @Override
-  protected void cleanup(Context context)
-      throws IOException, InterruptedException {
-
-    double[][] X = new double[ ITEMS.size() ][];
-    double[] T = HOT.stream().mapToDouble( Double::doubleValue ).toArray();
-
-    int i = 0;
-    for ( List<Double> arr : ITEMS )
-    {
-      X[ i++ ] = arr.stream().mapToDouble( Double::doubleValue ).toArray();
-    }
-
-    OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-
-    regression.newSampleData( T, X );
-
-    context.write( new Text( "\n---- len: " + X.length + " " + T.length ),
-        new DoubleWritable() );
-
-    // for ( int m = 0; m < T.length; m++ )
-    // {
-    // context.write( new Text( "\n----: " + Arrays.toString( X[ m ] ) ),
-    // new DoubleWritable( T[ m ] ) );
-    // }
-
-    double[] Xn = X[ 4 ];
-    double Tn = T[ 4 ];
-
-    double Yn = use( context, regression, Xn );
-
-    context.write( new Text( "\n---- " + Arrays.toString( Xn ) + ",\tActual: "
-        + Tn + ",\tPredicted:" ), new DoubleWritable( Yn ) );
-  }
-
-  public double use(Context context, OLSMultipleLinearRegression regression,
-      double[] X) throws IOException, InterruptedException {
-    if ( regression == null )
-    {
-      throw new IllegalArgumentException(
-          "regression is not intialized, null." );
-    }
-    double[] beta = regression.estimateRegressionParameters();
-    context.write( new Text( "\n---- " + Arrays.toString( beta ) ),
-        new DoubleWritable() );
-
-    // intercept at beta[0]
-    double prediction = beta[ 0 ];
-    for ( int i = 1; i < beta.length; i++ )
-    {
-      prediction += beta[ i ] * X[ i - 1 ];
-    }
-    return prediction;
+  private double updateAverage(double average, int size, double value) {
+    return ( size * average + value ) / ( size + 1 );
   }
 
 }

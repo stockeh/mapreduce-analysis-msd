@@ -15,11 +15,14 @@ import cs455.hadoop.util.DocumentUtilities;
  */
 public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
-  private final Text songID = new Text();
+  private final Text ID = new Text();
 
-  private final Text outputValue = new Text();
+  private final Text OUTPUT = new Text();
 
-  private final StringBuilder sb = new StringBuilder();
+  private final String[] KEYS = new String[] { "Start Time", "Pitch", "Timbre",
+      "Max Loudness", "Max Loudness Time", "Start Loudness" };
+
+  private final int[] INDICES = new int[] { 18, 20, 21, 22, 23, 24 };
 
   /**
    * Expected Output:
@@ -33,50 +36,19 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       throws IOException, InterruptedException {
 
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
-
-    String id = itr.get( 1 );
-    String hotness = itr.get( 2 );
-
-    double hot;
-    try
+    // TODO: REMOVE THIS
+    if ( itr.size() > 24 )
     {
-      hot = Double.parseDouble( hotness );
-    } catch ( NullPointerException | NumberFormatException e )
-    {
-      hot = 0;
-    }
-
-    if ( !id.isEmpty() && hot != 0 )
-    {
-      sb.append( hotness ); // hotness
-      sb.append( "\t" );
-      // sb.append( itr.get( 4 ) ); // danceability
-      // sb.append( "\t" );
-      sb.append( itr.get( 5 ) ); // duration
-      sb.append( "\t" );
-      sb.append( itr.get( 6 ) ); // fade_in
-      sb.append( "\t" );
-      // sb.append( itr.get( 7 ) ); // energy
-      // sb.append( "\t" );
-      sb.append( itr.get( 8 ) ); // key
-      sb.append( "\t" );
-      sb.append( itr.get( 10 ) ); // loudness
-      sb.append( "\t" );
-      sb.append( itr.get( 11 ) ); // mode
-      sb.append( "\t" );
-      sb.append( itr.get( 13 ) ); // fade_out
-      sb.append( "\t" );
-      sb.append( itr.get( 14 ) ); // tempo
-      sb.append( "\t" );
-      sb.append( itr.get( 15 ) ); // time_signature
-      sb.append( " " );
-
-      songID.set( id );
-      outputValue.set( sb.toString() );
-      sb.setLength( 0 );
-
-      context.write( songID, outputValue );
+      for ( int i = 0; i < INDICES.length; i++ )
+      {
+        String val = itr.get( INDICES[ i ] ).trim();
+        if ( !val.isEmpty() )
+        {
+          ID.set( KEYS[ i ] );
+          OUTPUT.set( val );
+          context.write( ID, OUTPUT );
+        }
+      }
     }
   }
-
 }
