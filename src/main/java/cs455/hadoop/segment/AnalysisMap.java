@@ -19,11 +19,17 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final Text OUTPUT = new Text();
 
-  private final String[] KEYS = new String[] { "Start Time", "Pitch", "Timbre",
-      "Max Loudness", "Max Loudness Time", "Start Loudness" };
+  private final String[] KEYS = new String[] { "Start Time", "Max Loudness",
+      "Max Loudness Time", "Start Loudness" };
 
-  private final int[] INDICES = new int[] { 18, 20, 21, 22, 23, 24 };
+  private final int[] INDICES = new int[] { 18, 22, 23, 24 };
 
+  /**
+   * private final String[] KEYS = new String[] { "Start Time", "Pitch",
+   * "Timbre", "Max Loudness", "Max Loudness Time", "Start Loudness" };
+   * 
+   * private final int[] INDICES = new int[] { 18, 20, 21, 22, 23, 24 };
+   */
   /**
    * Expected Output:
    * 

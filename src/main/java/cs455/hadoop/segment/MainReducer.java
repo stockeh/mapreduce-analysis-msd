@@ -53,6 +53,7 @@ public class MainReducer extends Reducer<Text, Text, Text, Text> {
 
   private double[] computeAverage() {
     int average = ( int ) Math.round( movingAverage.getAverage() );
+    // int average = 900;
     double[] fin = new double[ average ];
     int[] indexSize = new int[ average ];
 
