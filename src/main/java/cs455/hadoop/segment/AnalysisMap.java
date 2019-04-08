@@ -19,11 +19,17 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final Text OUTPUT = new Text();
 
-  private final String[] KEYS = new String[] { "Start Time", "Pitch", "Timbre",
-      "Max Loudness", "Max Loudness Time", "Start Loudness" };
+  private final String[] KEYS = new String[] { "Start Time", "Max Loudness",
+      "Max Loudness Time", "Start Loudness" };
 
-  private final int[] INDICES = new int[] { 18, 20, 21, 22, 23, 24 };
+  private final int[] INDICES = new int[] { 18, 22, 23, 24 };
 
+  /**
+   * private final String[] KEYS = new String[] { "Start Time", "Pitch",
+   * "Timbre", "Max Loudness", "Max Loudness Time", "Start Loudness" };
+   * 
+   * private final int[] INDICES = new int[] { 18, 20, 21, 22, 23, 24 };
+   */
   /**
    * Expected Output:
    * 
@@ -36,18 +42,14 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       throws IOException, InterruptedException {
 
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
-    // TODO: REMOVE THIS
-    if ( itr.size() > 24 )
+    for ( int i = 0; i < INDICES.length; i++ )
     {
-      for ( int i = 0; i < INDICES.length; i++ )
+      String val = itr.get( INDICES[ i ] ).trim();
+      if ( !val.isEmpty() )
       {
-        String val = itr.get( INDICES[ i ] ).trim();
-        if ( !val.isEmpty() )
-        {
-          ID.set( KEYS[ i ] );
-          OUTPUT.set( val );
-          context.write( ID, OUTPUT );
-        }
+        ID.set( KEYS[ i ] );
+        OUTPUT.set( val );
+        context.write( ID, OUTPUT );
       }
     }
   }

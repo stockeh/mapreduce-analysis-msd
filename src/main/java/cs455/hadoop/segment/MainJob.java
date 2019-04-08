@@ -58,11 +58,11 @@ public class MainJob {
       job.setOutputKeyClass( Text.class );
       job.setOutputValueClass( Text.class );
 
-      job.setMapperClass(AnalysisMap.class);
-//      job.setCombinerClass( MainCombiner.class );
+      job.setMapperClass( AnalysisMap.class );
+      job.setCombinerClass( MainReducer.class );
       job.setReducerClass( MainReducer.class );
-      
-      FileInputFormat.setInputPaths(job, new Path(args[0]));
+
+      FileInputFormat.setInputPaths( job, new Path( args[ 0 ] ) );
       FileOutputFormat.setOutputPath( job, new Path( args[ 1 ] ) );
 
       return job.waitForCompletion( true ) ? 0 : 1;
