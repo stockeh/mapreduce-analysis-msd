@@ -6,6 +6,7 @@ import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import cs455.hadoop.util.DocumentUtilities;
 
 /**
  * Reducer class that takes the output from the mapper and organizes
@@ -33,7 +34,6 @@ public class MainReducer extends Reducer<Text, Text, Text, Text> {
   protected void reduce(Text key, Iterable<Text> values, Context context)
       throws IOException, InterruptedException {
 
-
     for ( Text val : values )
     {
       String[] item = val.toString().split( "\\s+" );
@@ -41,7 +41,49 @@ public class MainReducer extends Reducer<Text, Text, Text, Text> {
       movingAverage.accept( item.length );
     }
 
-    context.write( key,
-        new Text( Double.toString( movingAverage.getAverage() ) ) );
+    double[] averaged = computeAverage();
+    StringBuilder sb = new StringBuilder();
+
+    for ( int i = 0; i < averaged.length; ++i )
+    {
+      sb.append( averaged[ i ] ).append( " " );
+    }
+    context.write( key, new Text( sb.toString() + "\n" ) );
   }
+
+  private double[] computeAverage() {
+    int average = ( int ) Math.round( movingAverage.getAverage() );
+    double[] fin = new double[ average ];
+    int[] indexSize = new int[ average ];
+
+    for ( int i = 0; i < ITEMS.size(); ++i )
+    {
+      String[] item = ITEMS.get( i );
+      int len = item.length;
+      if ( len >= average )
+      {
+        int stride = len / average;
+        for ( int j = 0; j < average; ++j )
+        {
+          fin[ j ] = updateAverage( fin[ j ], indexSize[ j ]++,
+              DocumentUtilities.parseDouble( item[ j * stride ] ) );
+        }
+      } else
+      {
+        int stride = average / len;
+        for ( int j = 0; j < len; ++j )
+        {
+          fin[ j * stride ] =
+              updateAverage( fin[ j * stride ], indexSize[ j * stride ]++,
+                  DocumentUtilities.parseDouble( item[ j ] ) );
+        }
+      }
+    }
+    return fin;
+  }
+
+  private double updateAverage(double average, int size, double value) {
+    return ( size * average + value ) / ( size + 1 );
+  }
+
 }

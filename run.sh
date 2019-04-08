@@ -49,6 +49,7 @@ case "$1" in
     
 -2) CLASS_JOB="segment"
     FIRST_INPUT="/${HDFS_DATA}/analysis/"
+#     FIRST_INPUT="/${HDFS_DATA}/tmp/"
     ;;   
     
 -3) CLASS_JOB="aggregate"

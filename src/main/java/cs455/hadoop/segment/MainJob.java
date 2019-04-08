@@ -59,7 +59,7 @@ public class MainJob {
       job.setOutputValueClass( Text.class );
 
       job.setMapperClass(AnalysisMap.class);
-
+//      job.setCombinerClass( MainCombiner.class );
       job.setReducerClass( MainReducer.class );
       
       FileInputFormat.setInputPaths(job, new Path(args[0]));
