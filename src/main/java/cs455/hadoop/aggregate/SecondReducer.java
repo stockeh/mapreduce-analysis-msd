@@ -1,10 +1,20 @@
 package cs455.hadoop.aggregate;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.util.StringUtils;
 import cs455.hadoop.util.DocumentUtilities;
 
 /**
@@ -18,6 +28,49 @@ public class SecondReducer extends Reducer<Text, Text, Text, Text> {
 
   public static final List<String[]> TMP_ITEMS = new ArrayList<>();
 
+  private static final Map<String, Integer> MAP = new HashMap<>();
+
+  @Override
+  public void setup(Context context) throws IOException, InterruptedException {
+    Configuration conf = context.getConfiguration();
+    URI[] patternsURIs = Job.getInstance( conf ).getCacheFiles();
+    for ( URI patternsURI : patternsURIs )
+    {
+      Path path = new Path( patternsURI.getPath() );
+      String fileName = path.getName().toString();
+      praseCacheFile( fileName );
+    }
+  }
+
+  private void praseCacheFile(String fileName) {
+    try (
+        BufferedReader fis = new BufferedReader( new FileReader( fileName ) ) )
+    {
+      String line = null;
+      ArrayList<String> itr;
+      while ( ( line = fis.readLine() ) != null )
+      {
+        itr = DocumentUtilities.splitString( line );
+
+        if ( itr.size() == 7 )
+        {
+          if ( itr.get( 0 ).equals( DocumentUtilities.AVG_IDENTIFIER ) )
+          {
+            for ( int i = 0; i < itr.size() - 1; i++ )
+            {
+              MAP.put( DocumentUtilities.SEGMENT_KEYS[ i ],
+                  Integer.parseInt( itr.get( i + 1 ) ) );
+            }
+          }
+        }
+      }
+    } catch ( IOException e )
+    {
+      System.err.println( "Caught exception while parsing the cached file '"
+          + StringUtils.stringifyException( e ) );
+    }
+  }
+
   /**
    * The mappers use the data's <b>song_id</b> to join the data as a
    * <code>Text key</code>. The values are arranged in no particular
@@ -30,34 +83,16 @@ public class SecondReducer extends Reducer<Text, Text, Text, Text> {
   protected void reduce(Text key, Iterable<Text> values, Context context)
       throws IOException, InterruptedException {
 
-    double[] averaged = null;
-    int[] indices = null;
+    int size = MAP.get( key.toString() );
+    double[] averaged = new double[ size ];;
+    int[] indices = new int[ size ];;
 
     for ( Text val : values )
     {
       String[] item = val.toString().split( "\\s+" );
-      if ( averaged == null && item.length == 1 )
-      {
-        int size = Integer.parseInt( item[ 0 ] );
-        averaged = new double[ size ];
-        indices = new int[ size ];
-      } else if ( averaged != null )
-      {
-        if ( !TMP_ITEMS.isEmpty() )
-        {
-          for ( String[] tmp : TMP_ITEMS )
-          {
-            computeAverage( averaged, indices, tmp );
-          }
-        } else
-        {
-          computeAverage( averaged, indices, item );
-        }
-      } else
-      {
-        TMP_ITEMS.add( item );
-      }
+      computeAverage( averaged, indices, item );
     }
+
     StringBuilder sb = new StringBuilder();
 
     for ( int i = 0; i < averaged.length; ++i )

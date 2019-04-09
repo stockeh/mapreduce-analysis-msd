@@ -35,16 +35,6 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
 
     String id = itr.get( 1 );
-    String hotness = itr.get( 2 );
-
-    double hot;
-    try
-    {
-      hot = Double.parseDouble( hotness );
-    } catch ( NullPointerException | NumberFormatException e )
-    {
-      hot = 0;
-    }
 
     if ( !id.isEmpty() && !id.equals( "song_id" ))
     {
@@ -60,6 +50,17 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       sb.setLength( 0 );
       context.write( songID, outputValue );
 
+      String hotness = itr.get( 2 );
+
+      double hot;
+      try
+      {
+        hot = Double.parseDouble( hotness );
+      } catch ( NullPointerException | NumberFormatException e )
+      {
+        hot = 0;
+      }
+      
       if ( hot != 0 )
       {
         sb.append( hotness ).append( "\t" ); // hotness
@@ -73,10 +74,11 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
         sb.append( itr.get( 13 ) ).append( "\t" ); // fade_out
         sb.append( itr.get( 14 ) ).append( "\t" ); // tempo
         sb.append( itr.get( 15 ) ).append( " " ); // time_signature
+        
+        outputValue.set( sb.toString() );
+        sb.setLength( 0 );
+        context.write( songID, outputValue );
       }
-      outputValue.set( sb.toString() );
-      sb.setLength( 0 );
-      context.write( songID, outputValue );
     }
   }
 

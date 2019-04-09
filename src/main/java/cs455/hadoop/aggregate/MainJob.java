@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -52,7 +53,7 @@ public class MainJob {
     private void runJob1(String[] args, Configuration conf)
         throws IOException, ClassNotFoundException, InterruptedException {
 
-      Job job = Job.getInstance( conf, "Aggregate Analysis - Job 1" );
+      Job job = Job.getInstance( conf, "1 - Aggregate Analysis" );
       job.setJarByClass( MainJob.class );
       job.setNumReduceTasks( 1 );
 
@@ -71,12 +72,13 @@ public class MainJob {
       FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] + "/hotness" ) );
 
       job.waitForCompletion( true );
+
     }
 
     private int runJob2(String[] args, Configuration conf)
         throws IOException, ClassNotFoundException, InterruptedException {
 
-      Job job = Job.getInstance( conf, "Aggregate Analysis - Job 2" );
+      Job job = Job.getInstance( conf, "2 - Aggregate Analysis" );
       job.setJarByClass( MainJob.class );
       job.setNumReduceTasks( 6 );
 
@@ -85,13 +87,12 @@ public class MainJob {
       job.setOutputKeyClass( Text.class );
       job.setOutputValueClass( Text.class );
 
-      MultipleInputs.addInputPath( job, new Path( args[ 1 ] ),
-          TextInputFormat.class, SecondAnalysisMap.class );
-      MultipleInputs.addInputPath( job,
-          new Path( args[ 2 ] + "/hotness/part-r-00000" ),
-          TextInputFormat.class, SecondAverageMap.class );
-      
-      job.setSortComparatorClass( Text.Comparator.class );
+      job.setMapperClass( SecondAnalysisMap.class );
+      FileInputFormat.setInputPaths( job, new Path( args[ 1 ] ) );
+
+      job.addCacheFile(
+          new Path( args[ 2 ] + "/hotness/part-r-00000" ).toUri() );
+
       job.setPartitionerClass( CustomPartitioner.class );
       job.setReducerClass( SecondReducer.class );
 
