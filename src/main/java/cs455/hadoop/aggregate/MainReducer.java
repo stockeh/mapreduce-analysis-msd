@@ -118,7 +118,7 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
     {
       sb.append( "," ).append( Math.round( AVG_SEG_STATS[ i ].getAverage() ) );
     }
-    // AVG_IDENTIFIER,#.###,#.###,#.###,#.###,#.###,#.###
+    // AVG_IDENTIFIER,###,###,###,###,###,###
     context.write( new Text( sb.toString() ), NullWritable.get() );
 
     context.write( new Text( "\n----Q9. SONG WITH A HIGHER HOTNESS" ),

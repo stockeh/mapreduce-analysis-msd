@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -20,6 +19,17 @@ import cs455.hadoop.util.DocumentUtilities;
 /**
  * Reducer class that takes the output from the mapper and organizes
  * the values accordingly.
+ *
+ * Answers the following question:
+ * 
+ * <pre>
+ * Create segment data for the average song.
+ * Include start time, pitch, timbre, max loudness, max loudness time,
+ * and start loudness
+ * </pre>
+ * 
+ * Each Reducer is associated with a specific segment, and will read
+ * the average length from cache.
  * 
  * @author stock
  *
@@ -30,6 +40,10 @@ public class SecondReducer extends Reducer<Text, Text, Text, Text> {
 
   private static final Map<String, Integer> MAP = new HashMap<>();
 
+  /**
+   * Retrieve the cache files specified in the driver. This is executed
+   * <b>once</b> before the map phase begings.
+   */
   @Override
   public void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
@@ -42,6 +56,18 @@ public class SecondReducer extends Reducer<Text, Text, Text, Text> {
     }
   }
 
+  /**
+   * Read in the distributed cache file looking for segment <i>Average
+   * Identifier</i>, and their associated average values
+   * 
+   * It is assumed that the cache file has a line of the format:
+   * 
+   * <pre>
+   * AVG_IDENTIFIER,###,###,###,###,###,###
+   * </pre>
+   * 
+   * @param fileName to be parsed
+   */
   private void praseCacheFile(String fileName) {
     try (
         BufferedReader fis = new BufferedReader( new FileReader( fileName ) ) )
@@ -72,12 +98,15 @@ public class SecondReducer extends Reducer<Text, Text, Text, Text> {
   }
 
   /**
-   * The mappers use the data's <b>song_id</b> to join the data as a
+   * The mappers use the data's <b>column name</b> to join the data as a
    * <code>Text key</code>. The values are arranged in no particular
    * order, but differ in split size. Values from the
-   * <code>AnalysisMap</code> class have 9 elements shown below. Data
-   * from the <code>MetadataMap</code> only has 2 elements. This is used
-   * to organize the values to their associated classes.
+   * <code>AnalysisMap</code> are partitioned to the Reducer with the
+   * associated <i>Average Identifier</i>.
+   * 
+   * Before the segment values are read for each <i>Average
+   * Identifier</i>, the array size for the average segment length is
+   * allocated as specified by the cache.
    */
   @Override
   protected void reduce(Text key, Iterable<Text> values, Context context)
@@ -90,7 +119,7 @@ public class SecondReducer extends Reducer<Text, Text, Text, Text> {
     for ( Text val : values )
     {
       String[] item = val.toString().split( "\\s+" );
-      computeAverage( averaged, indices, item );
+      combineSegment( averaged, indices, item );
     }
 
     StringBuilder sb = new StringBuilder();
@@ -99,10 +128,33 @@ public class SecondReducer extends Reducer<Text, Text, Text, Text> {
     {
       sb.append( averaged[ i ] ).append( " " );
     }
-    context.write( key, new Text( sb.toString() + "\n" ) );
+    context.write( key, new Text( sb.toString() ) );
   }
 
-  private void computeAverage(double[] averaged, int[] indices, String[] item) {
+  /**
+   * Combine the new segment value for some song to the <b>global</b>
+   * average length segment.
+   * 
+   * Combination of the segments are accomplished via stride and
+   * averaging techniques. This is done in one of two ways:
+   * 
+   * <ol>
+   * <li>Longer segments map equally separated values to each value of
+   * the globally averaged segment array</li>
+   * <li>Shorter segments map each value to equally separated values of
+   * the globally averaged segment array</li>
+   * </ol>
+   *
+   * Upon mapping each value accordingly, the running average is updated
+   * for the value of the globally averaged segment array.
+   * 
+   * @param averaged globally averaged segment array of length N (
+   *        specified by cache value )
+   * @param indices store the size ( number of elements added ) for each
+   *        index of the globally averaged segment array
+   * @param item segment data for some song
+   */
+  private void combineSegment(double[] averaged, int[] indices, String[] item) {
 
     int average = averaged.length;
     int len = item.length;
@@ -127,6 +179,17 @@ public class SecondReducer extends Reducer<Text, Text, Text, Text> {
     }
   }
 
+  /**
+   * Update the average value for some index in the globally averaged
+   * segment array.
+   * 
+   * @param average current value ( running average ) for some value the
+   *        globally averaged segment array
+   * @param size number of elements that have been added to a particular
+   *        index
+   * @param value new value to add to average
+   * @return the new updated, average, value
+   */
   private double updateAverage(double average, int size, double value) {
     return ( size * average + value ) / ( size + 1 );
   }
