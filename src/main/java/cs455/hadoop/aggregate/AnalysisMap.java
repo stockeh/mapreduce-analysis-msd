@@ -46,7 +46,7 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       hot = 0;
     }
 
-    if ( !id.isEmpty() )
+    if ( !id.isEmpty() && !id.equals( "song_id" ))
     {
       songID.set( id );
 
@@ -54,7 +54,7 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       {
         int length = itr.get( DocumentUtilities.SEGMENT_INDICES[ i ] )
             .split( "\\s+" ).length;
-        sb.append( "\t" ).append( Integer.toString( length ) );
+        sb.append( Integer.toString( length ) ).append( "\t" );
       }
       outputValue.set( sb.toString() );
       sb.setLength( 0 );

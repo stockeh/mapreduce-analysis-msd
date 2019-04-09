@@ -74,15 +74,13 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
     for ( Text v : values )
     {
       String[] elements = v.toString().split( "\t" );
-      int nElements = elements.length;
-
+      final int nElements = elements.length;
       if ( nElements == AVG_SEG_STATS.length )
       {
         for ( int i = 0; i < AVG_SEG_STATS.length; i++ )
         {
           AVG_SEG_STATS[ i ]
               .accept( DocumentUtilities.parseInt( elements[ i ] ) );
-          context.write( new Text( elements[ i ] ), NullWritable.get() );
         }
       } else if ( nElements == ( nFeatures + 1 ) )
       {

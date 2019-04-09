@@ -34,15 +34,11 @@ public class SecondAverageMap extends Mapper<LongWritable, Text, Text, Text> {
     {
       if ( itr.get( 0 ).equals( DocumentUtilities.AVG_IDENTIFIER ) )
       {
-        for ( int i = 1; i < itr.size(); i++ )
+        for ( int i = 0; i < itr.size() - 1; i++ )
         {
-          String val = itr.get( i ).trim();
-          if ( !val.isEmpty() )
-          {
-            ID.set( DocumentUtilities.SEGMENT_KEYS[ i ] );
-            OUTPUT.set( val );
-            context.write( ID, OUTPUT );
-          }
+          ID.set( DocumentUtilities.SEGMENT_KEYS[ i ] );
+          OUTPUT.set( itr.get( i + 1 ) );
+          context.write( ID, OUTPUT );
         }
       }
     }

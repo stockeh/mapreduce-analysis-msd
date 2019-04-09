@@ -33,8 +33,8 @@ public class MainJob {
     @Override
     public int run(String[] args) throws Exception {
       Configuration conf = new Configuration();
-      return runJob1( args, conf );
-//      return runJob2( args, conf );
+      runJob1( args, conf );
+      return runJob2( args, conf );
     }
 
     /**
@@ -49,7 +49,7 @@ public class MainJob {
      * @throws ClassNotFoundException
      * @throws InterruptedException
      */
-    private int runJob1(String[] args, Configuration conf)
+    private void runJob1(String[] args, Configuration conf)
         throws IOException, ClassNotFoundException, InterruptedException {
 
       Job job = Job.getInstance( conf, "Aggregate Analysis - Job 1" );
@@ -68,10 +68,9 @@ public class MainJob {
 
       job.setReducerClass( MainReducer.class );
 
-      FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] ) );
+      FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] + "/hotness" ) );
 
-      // job.waitForCompletion( true );
-      return job.waitForCompletion( true ) ? 0 : 1;
+      job.waitForCompletion( true );
     }
 
     private int runJob2(String[] args, Configuration conf)
@@ -88,10 +87,13 @@ public class MainJob {
 
       MultipleInputs.addInputPath( job, new Path( args[ 1 ] ),
           TextInputFormat.class, SecondAnalysisMap.class );
-      MultipleInputs.addInputPath( job, new Path( args[ 2 ] + "/hotness" ),
+      MultipleInputs.addInputPath( job,
+          new Path( args[ 2 ] + "/hotness/part-r-00000" ),
           TextInputFormat.class, SecondAverageMap.class );
-
-      job.setReducerClass( MainReducer.class );
+      
+      job.setSortComparatorClass( Text.Comparator.class );
+      job.setPartitionerClass( CustomPartitioner.class );
+      job.setReducerClass( SecondReducer.class );
 
       FileOutputFormat.setOutputPath( job,
           new Path( args[ 2 ] + "/hotness/segment" ) );

@@ -59,8 +59,8 @@ public class MainJob {
       job.setOutputValueClass( Text.class );
 
       job.setMapperClass( AnalysisMap.class );
-      job.setCombinerClass( MainReducer.class );
-      job.setReducerClass( MainReducer.class );
+      job.setCombinerClass( SecondReducer.class );
+      job.setReducerClass( SecondReducer.class );
 
       FileInputFormat.setInputPaths( job, new Path( args[ 0 ] ) );
       FileOutputFormat.setOutputPath( job, new Path( args[ 1 ] ) );

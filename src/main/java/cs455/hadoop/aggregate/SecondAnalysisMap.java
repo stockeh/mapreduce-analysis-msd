@@ -25,14 +25,20 @@ public class SecondAnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       throws IOException, InterruptedException {
 
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
-    for ( int i = 0; i < DocumentUtilities.SEGMENT_INDICES.length; i++ )
+
+    String id = itr.get( 1 );
+
+    if ( !id.isEmpty() && !id.equals( "song_id" ) )
     {
-      String val = itr.get( DocumentUtilities.SEGMENT_INDICES[ i ] ).trim();
-      if ( !val.isEmpty() )
+      for ( int i = 0; i < DocumentUtilities.SEGMENT_INDICES.length; i++ )
       {
-        ID.set( DocumentUtilities.SEGMENT_KEYS[ i ] );
-        OUTPUT.set( val );
-        context.write( ID, OUTPUT );
+        String val = itr.get( DocumentUtilities.SEGMENT_INDICES[ i ] ).trim();
+        if ( !val.isEmpty() )
+        {
+          ID.set( DocumentUtilities.SEGMENT_KEYS[ i ] );
+          OUTPUT.set( val );
+          context.write( ID, OUTPUT );
+        }
       }
     }
   }

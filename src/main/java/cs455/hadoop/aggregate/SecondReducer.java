@@ -1,4 +1,4 @@
-package cs455.hadoop.segment;
+package cs455.hadoop.aggregate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import cs455.hadoop.util.DocumentUtilities;
  * @author stock
  *
  */
-public class MainReducer extends Reducer<Text, Text, Text, Text> {
+public class SecondReducer extends Reducer<Text, Text, Text, Text> {
 
   public static final List<String[]> ITEMS = new ArrayList<>();
 
@@ -37,19 +37,30 @@ public class MainReducer extends Reducer<Text, Text, Text, Text> {
     double[] averaged = new double[ average ];
     int[] indices = new int[ average ];
 
+    boolean first = true;
+    int index = 0;
     for ( Text val : values )
     {
-      String[] item = val.toString().split( "\\s+" );
-      computeAverage( averaged, indices, item );
+      if ( first )
+      {
+        context.write( val, new Text( Integer.toString( index ) ) );
+        first = false;
+      } else
+      {
+        break;
+      }
+      ++index;
+      // String[] item = val.toString().split( "\\s+" );
+      // computeAverage( averaged, indices, item );
     }
-
-    StringBuilder sb = new StringBuilder();
-
-    for ( int i = 0; i < averaged.length; ++i )
-    {
-      sb.append( averaged[ i ] ).append( " " );
-    }
-    context.write( key, new Text( sb.toString() + "\n" ) );
+    context.write( key, new Text( "MADE IT OUT" ) );
+    // StringBuilder sb = new StringBuilder();
+    //
+    // for ( int i = 0; i < averaged.length; ++i )
+    // {
+    // sb.append( averaged[ i ] ).append( " " );
+    // }
+    // context.write( key, new Text( sb.toString() + "\n" ) );
   }
 
   private void computeAverage(double[] averaged, int[] indices, String[] item) {
