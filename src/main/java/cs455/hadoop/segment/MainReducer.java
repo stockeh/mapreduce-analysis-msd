@@ -33,15 +33,16 @@ public class MainReducer extends Reducer<Text, Text, Text, Text> {
   @Override
   protected void reduce(Text key, Iterable<Text> values, Context context)
       throws IOException, InterruptedException {
+    int average = 200;
+    double[] averaged = new double[ average ];
+    int[] indices = new int[ average ];
 
     for ( Text val : values )
     {
       String[] item = val.toString().split( "\\s+" );
-      ITEMS.add( item );
-      movingAverage.accept( item.length );
+      computeAverage( averaged, indices, item );
     }
 
-    double[] averaged = computeAverage();
     StringBuilder sb = new StringBuilder();
 
     for ( int i = 0; i < averaged.length; ++i )
@@ -51,36 +52,29 @@ public class MainReducer extends Reducer<Text, Text, Text, Text> {
     context.write( key, new Text( sb.toString() + "\n" ) );
   }
 
-  private double[] computeAverage() {
-    int average = ( int ) Math.round( movingAverage.getAverage() );
-    // int average = 900;
-    double[] fin = new double[ average ];
-    int[] indexSize = new int[ average ];
+  private void computeAverage(double[] averaged, int[] indices, String[] item) {
 
-    for ( int i = 0; i < ITEMS.size(); ++i )
+    int average = averaged.length;
+    int len = item.length;
+
+    if ( len >= average )
     {
-      String[] item = ITEMS.get( i );
-      int len = item.length;
-      if ( len >= average )
+      int stride = len / average;
+      for ( int j = 0; j < average; ++j )
       {
-        int stride = len / average;
-        for ( int j = 0; j < average; ++j )
-        {
-          fin[ j ] = updateAverage( fin[ j ], indexSize[ j ]++,
-              DocumentUtilities.parseDouble( item[ j * stride ] ) );
-        }
-      } else
+        averaged[ j ] = updateAverage( averaged[ j ], indices[ j ]++,
+            DocumentUtilities.parseDouble( item[ j * stride ] ) );
+      }
+    } else
+    {
+      int stride = average / len;
+      for ( int j = 0; j < len; ++j )
       {
-        int stride = average / len;
-        for ( int j = 0; j < len; ++j )
-        {
-          fin[ j * stride ] =
-              updateAverage( fin[ j * stride ], indexSize[ j * stride ]++,
-                  DocumentUtilities.parseDouble( item[ j ] ) );
-        }
+        averaged[ j * stride ] =
+            updateAverage( averaged[ j * stride ], indices[ j * stride ]++,
+                DocumentUtilities.parseDouble( item[ j ] ) );
       }
     }
-    return fin;
   }
 
   private double updateAverage(double average, int size, double value) {

@@ -46,24 +46,36 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       hot = 0;
     }
 
-    if ( !id.isEmpty() && hot != 0 )
+    if ( !id.isEmpty() )
     {
-      sb.append( hotness ).append( "\t" ); // hotness
-      // sb.append( itr.get( 4 ) ).append( "\t" ); // danceability
-      sb.append( itr.get( 5 ) ).append( "\t" ); // duration
-      sb.append( itr.get( 6 ) ).append( "\t" ); // fade_in
-      // sb.append( itr.get( 7 ) ).append( "\t" ); // energy
-      sb.append( itr.get( 8 ) ).append( "\t" ); // key
-      sb.append( itr.get( 10 ) ).append( "\t" ); // loudness
-      sb.append( itr.get( 11 ) ).append( "\t" ); // mode
-      sb.append( itr.get( 13 ) ).append( "\t" ); // fade_out
-      sb.append( itr.get( 14 ) ).append( "\t" ); // tempo
-      sb.append( itr.get( 15 ) ).append( " " ); // time_signature
-
       songID.set( id );
+
+      for ( int i = 0; i < DocumentUtilities.SEGMENT_INDICES.length; i++ )
+      {
+        int length = itr.get( DocumentUtilities.SEGMENT_INDICES[ i ] )
+            .split( "\\s+" ).length;
+        sb.append( "\t" ).append( Integer.toString( length ) );
+      }
       outputValue.set( sb.toString() );
       sb.setLength( 0 );
+      context.write( songID, outputValue );
 
+      if ( hot != 0 )
+      {
+        sb.append( hotness ).append( "\t" ); // hotness
+        // sb.append( itr.get( 4 ) ).append( "\t" ); // danceability
+        sb.append( itr.get( 5 ) ).append( "\t" ); // duration
+        sb.append( itr.get( 6 ) ).append( "\t" ); // fade_in
+        // sb.append( itr.get( 7 ) ).append( "\t" ); // energy
+        sb.append( itr.get( 8 ) ).append( "\t" ); // key
+        sb.append( itr.get( 10 ) ).append( "\t" ); // loudness
+        sb.append( itr.get( 11 ) ).append( "\t" ); // mode
+        sb.append( itr.get( 13 ) ).append( "\t" ); // fade_out
+        sb.append( itr.get( 14 ) ).append( "\t" ); // tempo
+        sb.append( itr.get( 15 ) ).append( " " ); // time_signature
+      }
+      outputValue.set( sb.toString() );
+      sb.setLength( 0 );
       context.write( songID, outputValue );
     }
   }

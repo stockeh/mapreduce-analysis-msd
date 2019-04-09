@@ -34,6 +34,7 @@ public class MainJob {
     public int run(String[] args) throws Exception {
       Configuration conf = new Configuration();
       return runJob1( args, conf );
+//      return runJob2( args, conf );
     }
 
     /**
@@ -68,6 +69,32 @@ public class MainJob {
       job.setReducerClass( MainReducer.class );
 
       FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] ) );
+
+      // job.waitForCompletion( true );
+      return job.waitForCompletion( true ) ? 0 : 1;
+    }
+
+    private int runJob2(String[] args, Configuration conf)
+        throws IOException, ClassNotFoundException, InterruptedException {
+
+      Job job = Job.getInstance( conf, "Aggregate Analysis - Job 2" );
+      job.setJarByClass( MainJob.class );
+      job.setNumReduceTasks( 6 );
+
+      job.setMapOutputKeyClass( Text.class );
+      job.setMapOutputValueClass( Text.class );
+      job.setOutputKeyClass( Text.class );
+      job.setOutputValueClass( Text.class );
+
+      MultipleInputs.addInputPath( job, new Path( args[ 1 ] ),
+          TextInputFormat.class, SecondAnalysisMap.class );
+      MultipleInputs.addInputPath( job, new Path( args[ 2 ] + "/hotness" ),
+          TextInputFormat.class, SecondAverageMap.class );
+
+      job.setReducerClass( MainReducer.class );
+
+      FileOutputFormat.setOutputPath( job,
+          new Path( args[ 2 ] + "/hotness/segment" ) );
 
       return job.waitForCompletion( true ) ? 0 : 1;
     }

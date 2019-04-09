@@ -3,6 +3,7 @@ package cs455.hadoop.aggregate;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -34,6 +35,23 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
   // D number of features in each sample
   public static final int nFeatures = 8;
 
+  // Statistics for the average segment lengths
+  private static IntSummaryStatistics[] AVG_SEG_STATS;
+
+  /**
+   * Called once at the beginning of the task.
+   */
+  @Override
+  protected void setup(Context context)
+      throws IOException, InterruptedException {
+    AVG_SEG_STATS =
+        new IntSummaryStatistics[ DocumentUtilities.SEGMENT_KEYS.length ];
+    for ( int i = 0; i < AVG_SEG_STATS.length; i++ )
+    {
+      AVG_SEG_STATS[ i ] = new IntSummaryStatistics();
+    }
+  }
+
   /**
    * The mappers use the data's <b>song_id</b> to join the data as a
    * <code>Text key</code>. The values are arranged in no particular
@@ -56,16 +74,25 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
     for ( Text v : values )
     {
       String[] elements = v.toString().split( "\t" );
+      int nElements = elements.length;
 
-      if ( elements.length == 9 )
+      if ( nElements == AVG_SEG_STATS.length )
+      {
+        for ( int i = 0; i < AVG_SEG_STATS.length; i++ )
+        {
+          AVG_SEG_STATS[ i ]
+              .accept( DocumentUtilities.parseInt( elements[ i ] ) );
+          context.write( new Text( elements[ i ] ), NullWritable.get() );
+        }
+      } else if ( nElements == ( nFeatures + 1 ) )
       {
         hotness = DocumentUtilities.parseDouble( elements[ 0 ] );
-        for ( int i = 1; i < elements.length; i++ )
+        for ( int i = 1; i < nElements; i++ )
         {
           item.add( DocumentUtilities.parseDouble( elements[ i ] ) );
         }
         ++it;
-      } else if ( elements.length == 1 )
+      } else if ( nElements == 1 )
       {
         terms = elements[ 0 ];
         ++it;
@@ -85,6 +112,16 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
   @Override
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append( DocumentUtilities.AVG_IDENTIFIER );
+    for ( int i = 0; i < AVG_SEG_STATS.length; i++ )
+    {
+      sb.append( "," ).append( Math.round( AVG_SEG_STATS[ i ].getAverage() ) );
+    }
+    // AVG_IDENTIFIER,#.###,#.###,#.###,#.###,#.###,#.###
+    context.write( new Text( sb.toString() ), NullWritable.get() );
 
     context.write( new Text( "\n----Q9. SONG WITH A HIGHER HOTNESS" ),
         NullWritable.get() );
@@ -227,7 +264,7 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
     double hotness = 0;
     int index = 0;
     double featureVal = 0;
-    
+
     boolean done = false;
     while ( !done )
     {
