@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -33,7 +34,8 @@ public class MainJob {
     @Override
     public int run(String[] args) throws Exception {
       Configuration conf = new Configuration();
-      return runJob1( args, conf );
+      runJob1( args, conf );
+      return runJob2( args, conf );
     }
 
     /**
@@ -48,10 +50,10 @@ public class MainJob {
      * @throws ClassNotFoundException
      * @throws InterruptedException
      */
-    private int runJob1(String[] args, Configuration conf)
+    private void runJob1(String[] args, Configuration conf)
         throws IOException, ClassNotFoundException, InterruptedException {
 
-      Job job = Job.getInstance( conf, "Aggregate Analysis - Job 1" );
+      Job job = Job.getInstance( conf, "1 - Aggregate Analysis" );
       job.setJarByClass( MainJob.class );
       job.setNumReduceTasks( 1 );
 
@@ -67,7 +69,35 @@ public class MainJob {
 
       job.setReducerClass( MainReducer.class );
 
-      FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] ) );
+      FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] + "/hotness" ) );
+
+      job.waitForCompletion( true );
+
+    }
+
+    private int runJob2(String[] args, Configuration conf)
+        throws IOException, ClassNotFoundException, InterruptedException {
+
+      Job job = Job.getInstance( conf, "2 - Aggregate Analysis" );
+      job.setJarByClass( MainJob.class );
+      job.setNumReduceTasks( 6 );
+
+      job.setMapOutputKeyClass( Text.class );
+      job.setMapOutputValueClass( Text.class );
+      job.setOutputKeyClass( Text.class );
+      job.setOutputValueClass( Text.class );
+
+      job.setMapperClass( SecondAnalysisMap.class );
+      FileInputFormat.setInputPaths( job, new Path( args[ 1 ] ) );
+
+      job.addCacheFile(
+          new Path( args[ 2 ] + "/hotness/part-r-00000" ).toUri() );
+
+      job.setPartitionerClass( CustomPartitioner.class );
+      job.setReducerClass( SecondReducer.class );
+
+      FileOutputFormat.setOutputPath( job,
+          new Path( args[ 2 ] + "/hotness/segment" ) );
 
       return job.waitForCompletion( true ) ? 0 : 1;
     }

@@ -18,6 +18,15 @@ import cs455.hadoop.items.Item;
 
 public class DocumentUtilities {
 
+  public final static String[] SEGMENT_KEYS =
+      new String[] { "Start Time", "Pitch", "Timbre", "Max Loudness",
+          "Max Loudness Time", "Start Loudness" };
+
+  public final static int[] SEGMENT_INDICES =
+      new int[] { 18, 20, 21, 22, 23, 24 };
+
+  public final static String AVG_IDENTIFIER = "AVG_IDENTIFIER";
+
   /**
    * Split the input document with embedded commas ( , ) in data.
    * 
@@ -103,6 +112,23 @@ public class DocumentUtilities {
     try
     {
       return Double.parseDouble( str );
+    } catch ( NumberFormatException e )
+    {
+      return 0;
+    }
+  }
+
+  /**
+   * Returns a new int initialized to the value represented by the
+   * specified <code>String</code>.
+   * 
+   * @param str
+   * @return returns number if valid, 0 otherwise.
+   */
+  public static int parseInt(String str) {
+    try
+    {
+      return Integer.parseInt( str );
     } catch ( NumberFormatException e )
     {
       return 0;

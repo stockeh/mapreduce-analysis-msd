@@ -1,4 +1,4 @@
-package cs455.hadoop.segment;
+package cs455.hadoop.aggregate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,22 +7,11 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import cs455.hadoop.util.DocumentUtilities;
 
-/**
- * Mapper class for the analysis data files.
- * 
- * @author stock
- *
- */
-public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
+public class SecondAnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
 
   private final Text ID = new Text();
 
   private final Text OUTPUT = new Text();
-
-  private final String[] KEYS = new String[] { "Start Time", "Pitch", "Timbre",
-      "Max Loudness", "Max Loudness Time", "Start Loudness" };
-  
-  private final int[] INDICES = new int[] { 18, 20, 21, 22, 23, 24 };
 
   /**
    * Expected Output:
@@ -36,14 +25,20 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
       throws IOException, InterruptedException {
 
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
-    for ( int i = 0; i < INDICES.length; i++ )
+
+    String id = itr.get( 1 );
+
+    if ( !id.isEmpty() && !id.equals( "song_id" ) )
     {
-      String val = itr.get( INDICES[ i ] ).trim();
-      if ( !val.isEmpty() )
+      for ( int i = 0; i < DocumentUtilities.SEGMENT_INDICES.length; i++ )
       {
-        ID.set( KEYS[ i ] );
-        OUTPUT.set( val );
-        context.write( ID, OUTPUT );
+        String val = itr.get( DocumentUtilities.SEGMENT_INDICES[ i ] ).trim();
+        if ( !val.isEmpty() )
+        {
+          ID.set( DocumentUtilities.SEGMENT_KEYS[ i ] );
+          OUTPUT.set( val );
+          context.write( ID, OUTPUT );
+        }
       }
     }
   }
