@@ -87,17 +87,16 @@ public class MainJob {
       job.setOutputKeyClass( Text.class );
       job.setOutputValueClass( Text.class );
 
-      job.setMapperClass( SecondAnalysisMap.class );
-      FileInputFormat.setInputPaths( job, new Path( args[ 1 ] ) );
-
       job.addCacheFile(
           new Path( args[ 2 ] + "/hotness/part-r-00000" ).toUri() );
-
+      
+      job.setMapperClass( SecondAnalysisMap.class );
+      job.setCombinerClass( SecondReducer.class );
       job.setPartitionerClass( CustomPartitioner.class );
       job.setReducerClass( SecondReducer.class );
 
-      FileOutputFormat.setOutputPath( job,
-          new Path( args[ 2 ] + "/hotness/segment" ) );
+      FileInputFormat.setInputPaths( job, new Path( args[ 1 ] ) );
+      FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] + "/segment" ) );
 
       return job.waitForCompletion( true ) ? 0 : 1;
     }
