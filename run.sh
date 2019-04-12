@@ -10,11 +10,12 @@ OUT_DIR="/out"
 function usage {
 cat << EOF
     
-    Usage: run.sh -[ 1 | 2 | 3] -c -s
+    Usage: run.sh -[ 1 | 2 | 3 | 4] -c -s
 
     -1 : Song and Artist Questions Q1 - Q6, Q8
-    -2 : Segment Data Q7
-    -3 : Aggregate Analysis Q9
+    -2 : Aggregate Analysis Q7, Q9
+    -3 : Location Analysis Q10
+    -4 : OLD Segment Data Q7
     
     -c : Compile
     -s : Shared HDFS
@@ -47,15 +48,17 @@ case "$1" in
     SECOND_INPUT="/${HDFS_DATA}/analysis/"
     ;;
     
--2) CLASS_JOB="segment"
-    FIRST_INPUT="/${HDFS_DATA}/analysis/"
-#     FIRST_INPUT="/${HDFS_DATA}/tmp/"
-    ;;   
-    
--3) CLASS_JOB="aggregate"
+-2) CLASS_JOB="aggregate"
     SECOND_INPUT="/${HDFS_DATA}/analysis/"
     ;;   
- 
+
+-3) CLASS_JOB="location"
+    ;;   
+  
+-4) CLASS_JOB="segment"
+    FIRST_INPUT="/${HDFS_DATA}/analysis/"
+    ;;   
+     
 *) usage;
     ;;
     
