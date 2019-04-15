@@ -7,7 +7,7 @@ CORE_HDFS="hdfs://providence:30210"
 function usage {
 cat << EOF
     
-    Usage: spark-run.sh -[ 1 ] -c -s
+    Usage: spark-run.sh -[ 1 ] -c
 
     -1 : SBT Spark Runner
     
@@ -36,7 +36,8 @@ fi
 case "$1" in
     
 -1) CLASS_JOB="spark"
-    INPUT="${CORE_HDFS}/local/tmp/sample_multiclass_classification_data.txt"
+#     INPUT="${CORE_HDFS}/local/tmp/sample_multiclass_classification_data.txt"
+    INPUT="${CORE_HDFS}${OUT_DIR}/location/part-r-00000"
     OUTPUT="${CORE_HDFS}${OUT_DIR}/${CLASS_JOB}"
     spark_runner
     ;;

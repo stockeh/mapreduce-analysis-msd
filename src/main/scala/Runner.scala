@@ -27,9 +27,9 @@ object Runner {
     val test = splits(1)
 
     // specify layers for the neural network:
-    // input layer of size 4 (features), two intermediate of size 5 and 4
+    // input layer of size 10 (features), two intermediate of size 5 and 4
     // and output of size 3 (classes)
-    val layers = Array[Int](4, 5, 4, 3)
+    val layers = Array[Int](10, 5, 4, 3)
 
     // create the trainer and set its parameters
     val trainer = new MultilayerPerceptronClassifier()
