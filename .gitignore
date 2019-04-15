@@ -38,3 +38,8 @@ build
 *.class
 /bin/
 /local-data/
+
+# Apache Spark Specifics
+.cache-main
+/project/
+/target/
