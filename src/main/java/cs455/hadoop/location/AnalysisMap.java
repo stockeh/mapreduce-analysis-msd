@@ -52,7 +52,7 @@ public class AnalysisMap extends Mapper<LongWritable, Text, Text, Text> {
           .append( "\t" ); // fade_out
       sb.append( DocumentUtilities.parseDouble( itr.get( 14 ) ) )
           .append( "\t" ); // tempo
-      sb.append( DocumentUtilities.parseDouble( itr.get( 15 ) ) ).append( " " ); // time_signature
+      sb.append( DocumentUtilities.parseDouble( itr.get( 15 ) ) ); // time_signature
 
       OUTPUT.set( sb.toString() );
       sb.setLength( 0 );

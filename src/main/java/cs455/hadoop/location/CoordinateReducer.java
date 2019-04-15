@@ -52,8 +52,8 @@ public class CoordinateReducer extends Reducer<Text, Text, Text, Text> {
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
 
-    context.write( new Text( ":::" ),
-        new Text( Integer.toString( YEARS.size() ) ) );
+    context.write( new Text( "0" ),
+        new Text( Integer.toString( YEARS.size() ) + "\t0") );
 
     final Text out = new Text();
 

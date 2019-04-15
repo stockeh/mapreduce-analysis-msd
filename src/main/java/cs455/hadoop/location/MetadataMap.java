@@ -56,7 +56,7 @@ public class MetadataMap extends Mapper<LongWritable, Text, Text, Text> {
             .append( DocumentUtilities.parseDouble( itr.get( 5 ).trim() ) ) // lon
             .append( "\t" )
             .append( DocumentUtilities.parseDouble( itr.get( 4 ).trim() ) ) // lat
-            .append( " " ).toString() );
+            .toString() );
 
         context.write( KEY, OUTPUT );
         sb.setLength( 0 );

@@ -16,7 +16,7 @@ object Runner {
     
     val input = args(0)
     val output = args(1)
-
+    
     // Load the data stored in LIBSVM format as a DataFrame.
     val data = spark.read.format("libsvm")
       .load(input)
@@ -25,11 +25,12 @@ object Runner {
     val splits = data.randomSplit(Array(0.6, 0.4), seed = 1234L)
     val train = splits(0)
     val test = splits(1)
-
+    data.collect.foreach(println)
+    
     // specify layers for the neural network:
-    // input layer of size 10 (features), two intermediate of size 5 and 4
-    // and output of size 3 (classes)
-    val layers = Array[Int](10, 5, 4, 3)
+    // input layer of size 10 (features), three intermediate of size 9
+    // and output of size 86 (classes)
+    val layers = Array[Int](10, 15, 20, 25, 30, 35, 45, 50, 65, 75, 86)
 
     // create the trainer and set its parameters
     val trainer = new MultilayerPerceptronClassifier()

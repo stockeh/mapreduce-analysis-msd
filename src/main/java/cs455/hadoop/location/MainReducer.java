@@ -28,33 +28,36 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
 
   private final int METADATA_ITEMS = 4;
 
+  /**
+   * Grab the song from each item and store it as the key, the value
+   * will be a list of samples with that key.
+   */
   @Override
   protected void reduce(Text key, Iterable<Text> values, Context context)
       throws IOException, InterruptedException {
 
-    int it = 0;
     String year = null;
+    boolean analysis = false;
     String[] features = new String[ 10 ];
 
     for ( Text v : values )
     {
       String[] elements = v.toString().split( "\t" );
-      final int nElements = elements.length;
+      int nElements = elements.length;
       if ( nElements == ANALYSIS_ITEMS )
       {
         for ( int i = 0; i < ANALYSIS_ITEMS; i++ )
         {
           features[ i ] = INDICES[ i ] + elements[ i ];
         }
-        ++it;
+        analysis = true;
       } else if ( nElements == METADATA_ITEMS )
       {
         year = elements[ 0 ];
         features[ 9 ] = INDICES[ 9 ] + elements[ 1 ];
-        ++it;
       }
     }
-    if ( it == 2 && year != null )
+    if ( analysis && year != null )
     {
       List<String[]> list = ITEMS.get( year );
       if ( list == null )
@@ -66,25 +69,37 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
     }
   }
 
+  /**
+   * Format the output for all the samples as follows:
+   * 
+   * <pre>
+   * encoded_year 1:song_hotness 2:duration 3:fade_in 4:key 5:loudness \
+   *      6:mode 7:fade_out 8:tempo 9:time_sig 10:artist_hotness
+   * </pre>
+   */
   @Override
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
 
     final Text out = new Text();
     StringBuilder sb = new StringBuilder();
-
+    int code = 0;
     for ( Entry<String, List<String[]>> e : ITEMS.entrySet() )
     {
-      for ( String[] sample : e.getValue() )
+      if ( e.getValue().size() > 1000 )
       {
-        sb.append( e.getKey() );
-        for ( int i = 0; i < sample.length; ++i )
+        for ( String[] sample : e.getValue() )
         {
-          sb.append( " " ).append( sample[ i ] );
+          sb.append( code );
+          for ( int i = 0; i < sample.length; ++i )
+          {
+            sb.append( " " ).append( sample[ i ] );
+          }
+          out.set( sb.toString() );
+          sb.setLength( 0 );
+          context.write( out, NullWritable.get() );
         }
-        out.set( sb.toString() );
-        sb.setLength( 0 );
-        context.write( out, NullWritable.get() );
+        code++;
       }
     }
   }
