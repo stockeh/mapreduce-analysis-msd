@@ -4,7 +4,11 @@ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.sql.SparkSession
 
 /**
- * An example for Multilayer Perceptron Classification.
+ * Results only show 
+ * Test set accuracy = 0.07751118954597437
+ * Train set accuracy = 0.07859388064785854
+ *
+ * @author stock
  */
 object Runner {
 
@@ -16,7 +20,7 @@ object Runner {
     
     val input = args(0)
     val output = args(1)
-
+    
     // Load the data stored in LIBSVM format as a DataFrame.
     val data = spark.read.format("libsvm")
       .load(input)
@@ -25,30 +29,39 @@ object Runner {
     val splits = data.randomSplit(Array(0.6, 0.4), seed = 1234L)
     val train = splits(0)
     val test = splits(1)
-
+    data.collect.foreach(println)
+    
     // specify layers for the neural network:
-    // input layer of size 4 (features), two intermediate of size 5 and 4
-    // and output of size 3 (classes)
-    val layers = Array[Int](4, 5, 4, 3)
+    // input layer of size 10 (features), three intermediate of size 9
+    // and output of size 86 (classes)
+    val layers = Array[Int](10, 15, 20, 25, 30, 35, 40, 45)
 
     // create the trainer and set its parameters
     val trainer = new MultilayerPerceptronClassifier()
       .setLayers(layers)
       .setBlockSize(128)
       .setSeed(1234L)
-      .setMaxIter(100)
+      .setMaxIter(1000)
 
     // train the model
     val model = trainer.fit(train)
 
     // compute accuracy on the test set
-    val result = model.transform(test)
-    val predictionAndLabels = result.select("prediction", "label")
-    val evaluator = new MulticlassClassificationEvaluator()
+    val testresult = model.transform(test)
+    val testpredictionAndLabels = testresult.select("prediction", "label")
+    val testevaluator = new MulticlassClassificationEvaluator()
       .setMetricName("accuracy")
 
-    println(s"Test set accuracy = ${evaluator.evaluate(predictionAndLabels)}")
+    println(s"Test set accuracy = ${testevaluator.evaluate(testpredictionAndLabels)}")
 
+    val trainresults = model.transform(train)
+    val trainpredictionAndLabels = trainresults.select("prediction", "label")
+    val trainevaluator = new MulticlassClassificationEvaluator()
+      .setMetricName("accuracy")
+
+    println(s"Train set accuracy = ${trainevaluator.evaluate(trainpredictionAndLabels)}")
+
+    
     spark.stop()
   }
 }

@@ -4,9 +4,12 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -31,7 +34,37 @@ public class MainJob {
     @Override
     public int run(String[] args) throws Exception {
       Configuration conf = new Configuration();
-      return runJob1( args, conf );
+      runJob1( args, conf );
+      return runJob2( args, conf );
+    }
+
+    /**
+     * 
+     * @param args
+     * @param conf
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+     */
+    private void runJob1(String[] args, Configuration conf)
+        throws IOException, ClassNotFoundException, InterruptedException {
+
+      Job job = Job.getInstance( conf, "1 - Location Analysis" );
+      job.setJarByClass( MainJob.class );
+      job.setNumReduceTasks( 1 );
+
+      job.setMapOutputKeyClass( Text.class );
+      job.setMapOutputValueClass( Text.class );
+      job.setOutputKeyClass( Text.class );
+      job.setOutputValueClass( Text.class );
+
+      job.setMapperClass( MetadataMap.class );
+      job.setReducerClass( CoordinateReducer.class );
+
+      FileInputFormat.setInputPaths( job, new Path( args[ 0 ] ) );
+      FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] + "/coords" ) );
+
+      job.waitForCompletion( true );
     }
 
     /**
@@ -43,23 +76,26 @@ public class MainJob {
      * @throws ClassNotFoundException
      * @throws InterruptedException
      */
-    private int runJob1(String[] args, Configuration conf)
+    private int runJob2(String[] args, Configuration conf)
         throws IOException, ClassNotFoundException, InterruptedException {
 
-      Job job = Job.getInstance( conf, "Location Analysis - Job 1" );
+      Job job = Job.getInstance( conf, "2 - Location Analysis" );
       job.setJarByClass( MainJob.class );
       job.setNumReduceTasks( 1 );
 
       job.setMapOutputKeyClass( Text.class );
       job.setMapOutputValueClass( Text.class );
       job.setOutputKeyClass( Text.class );
-      job.setOutputValueClass( Text.class );
+      job.setOutputValueClass( NullWritable.class );
 
-      job.setMapperClass( MetadataMap.class );
+      MultipleInputs.addInputPath( job, new Path( args[ 0 ] ),
+          TextInputFormat.class, MetadataMap.class );
+      MultipleInputs.addInputPath( job, new Path( args[ 1 ] ),
+          TextInputFormat.class, AnalysisMap.class );
+
       job.setReducerClass( MainReducer.class );
 
-      FileInputFormat.setInputPaths( job, new Path( args[ 0 ] ) );
-      FileOutputFormat.setOutputPath( job, new Path( args[ 1 ] ) );
+      FileOutputFormat.setOutputPath( job, new Path( args[ 2 ] + "/samples" ) );
 
       return job.waitForCompletion( true ) ? 0 : 1;
     }
@@ -75,7 +111,7 @@ public class MainJob {
     {
       System.out.println( args[ i ] );
     }
-    if ( args.length != 2 )
+    if ( args.length != 3 )
     {
       System.err.println( "Invalid Argument Configurations - add / remove" );
       System.exit( 0 );

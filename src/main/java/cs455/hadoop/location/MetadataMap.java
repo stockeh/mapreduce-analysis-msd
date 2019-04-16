@@ -34,18 +34,31 @@ public class MetadataMap extends Mapper<LongWritable, Text, Text, Text> {
     ArrayList<String> itr = DocumentUtilities.splitString( value.toString() );
     if ( !itr.get( 0 ).isEmpty() )
     {
-      String id = itr.get( 3 );
+      String song_id = itr.get( 8 );
 
-      String lat = itr.get( 4 ).trim();
-      String lon = itr.get( 5 ).trim();
+      String year = itr.get( 14 ).trim();
 
-      if ( !id.isEmpty() && !lat.isEmpty() && !lon.isEmpty() )
+      int y;
+      try
       {
-        KEY.set( id );
-        OUTPUT.set( sb.append( lon ).append( "\t" ).append( lat ).toString() );
+        y = Integer.parseInt( year );
+      } catch ( NullPointerException | NumberFormatException e )
+      {
+        y = 0;
+      }
+
+      if ( !song_id.isEmpty() && y != 0 )
+      {
+        KEY.set( song_id );
+        OUTPUT.set( sb.append( year ).append( "\t" )
+            .append( DocumentUtilities.parseDouble( itr.get( 2 ) ) ) // artist_hotness
+            .append( "\t" )
+            .append( DocumentUtilities.parseDouble( itr.get( 5 ).trim() ) ) // lon
+            .append( "\t" )
+            .append( DocumentUtilities.parseDouble( itr.get( 4 ).trim() ) ) // lat
+            .toString() );
 
         context.write( KEY, OUTPUT );
-
         sb.setLength( 0 );
       }
     }
