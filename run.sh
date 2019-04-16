@@ -12,7 +12,7 @@ OUT_DIR="/out"
 function usage {
 cat << EOF
     
-    Usage: run.sh -[ 1 | 2 | 3 | 4] -c -s
+    Usage: run.sh -[ 1 | 2 | 3 ] -c -s
 
     -1 : Song and Artist Questions Q1 - Q6, Q8
     -2 : Aggregate Analysis Q7, Q9
@@ -56,23 +56,20 @@ if [[ $* = *-s* ]]; then
     OUT_DIR="/home/out"
 fi
 
-FIRST_INPUT="/"${HDFS_DATA}"/metadata/"
-SECOND_INPUT=""
+FIRST_INPUT="/"${HDFS_DATA}"/metadata/*.csv"
+SECOND_INPUT="/${HDFS_DATA}/analysis/*.csv"
 
 case "$1" in
     
 -1) CLASS_JOB="basic"
-    SECOND_INPUT="/${HDFS_DATA}/analysis/"
     hadoop_runner
     ;;
     
 -2) CLASS_JOB="aggregate"
-    SECOND_INPUT="/${HDFS_DATA}/analysis/"
     hadoop_runner
     ;;   
 
 -3) CLASS_JOB="location"
-    SECOND_INPUT="/${HDFS_DATA}/analysis/"
     hadoop_runner
     ;;   
     

@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 /**
  * Reducer class that takes the output from the mapper and organizes
  * the values accordingly.
- * 
+ *
  * @author stock
  *
  */
@@ -71,7 +71,7 @@ public class MainReducer extends Reducer<Text, Text, Text, NullWritable> {
 
   /**
    * Format the output for all the samples as follows:
-   * 
+   *
    * <pre>
    * encoded_year 1:song_hotness 2:duration 3:fade_in 4:key 5:loudness \
    *      6:mode 7:fade_out 8:tempo 9:time_sig 10:artist_hotness
