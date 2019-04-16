@@ -4,7 +4,11 @@ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.sql.SparkSession
 
 /**
- * An example for Multilayer Perceptron Classification.
+ * Results only show 
+ * Test set accuracy = 0.07751118954597437
+ * Train set accuracy = 0.07859388064785854
+ *
+ * @author stock
  */
 object Runner {
 
