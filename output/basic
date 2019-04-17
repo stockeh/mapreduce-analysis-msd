@@ -1,0 +1,127 @@
+
+----Q1. ARTIST WHO HAS THE MOST SONGS	0.0
+b'Ike & Tina Turner'	208.0
+b'Johnny Cash'	199.0
+b'Diana Ross'	196.0
+b'Willie Nelson'	191.0
+b'Beastie Boys'	191.0
+b'Michael Jackson'	189.0
+b'Joan Baez'	185.0
+b'Bob Marley'	183.0
+b'Duran Duran'	179.0
+b'Bruce Springsteen & The E Street Band'	178.0
+
+----Q2. ARTIST'S WHO'S SONGS ARE THE LOUDEST ON AVERAGE	0.0
+b'Shenggy'	3.931
+b'Pens'	3.796
+b'Pain Jerk'	3.746
+b'Massimo'	3.3920000000000003
+b'Kylie Minoise'	3.282222222222222
+b'Frazzbass'	3.122
+b'Boy + Girl'	3.071
+b'Landed'	3.062
+b'Huxtables'	3.026
+b'Campfires'	2.937
+
+----Q3. SONGS WITH THE HIGHEST HOTNESS SCORE	0.0
+b'Sleepyhead'	1.0
+b'Halfway Gone'	1.0
+b'Love Story'	1.0
+b'Enter Sandman'	1.0
+b'Bat Country (Album Version)'	1.0
+b'Bitter Sweet Symphony'	1.0
+b'Misery Business (Single Version)'	1.0
+b'Knock You Down'	1.0
+b'When A Man Loves A Woman'	1.0
+"b""Beggin'"""	1.0
+
+----Q4. ARTISTS WITH HIGHEST TOTAL TIME SPENT FADING IN SONGS	0.0
+b'50 CENT ft. MURDA MASS_ YOUNG BUCK & SPIDER LOC'	2428.37039
+b'Vincent Bruley'	2347.10676
+b'Melvins'	2266.3024199999995
+b'Leif Ove Andsnes'	2243.4029600000013
+b'Vangelis'	2174.366340000001
+b'William Basinski'	2140.5590699999993
+b'Stephan Micus'	2133.01359
+b'Yo-Yo Ma;Emanuel Ax'	2118.45128
+b'Michael Jackson'	2115.9152000000013
+b'David Zinman'	2107.94485
+
+----Q5. LONGEST, SHORTEST, AND MEDIAN LENGTH SONGS	0.0
+
+----LONGEST----	0.0
+b'Grounation'	3034.90567
+b'Raag - Shuddha Kalyan (Language: Hindustani; Raga: Shuddha Kalyan)'	3033.59955
+b'Discussion 2'	3033.44281
+b'Chapitre Un (a): Toutes Les Histoires'	3032.76363
+b'Der Geist des Llano Estacado \x13 Ein Spion'	3032.58077
+b'Raga: Kaushi Kanada (Tabla: Kumar Bose)'	3032.5024
+b'Galactic Odyssey'	3030.90893
+b'Members Select Special Bonus Mix (Free Bonus mix with full album download)'	3030.62159
+b'Rag: Gaud Malhar & Rag: Mian Malhar'	3030.17751
+"b""Openin' Doors"""	3030.02077
+
+----SHORTEST----	0.0
+b'Rainy Days And Mondays'	0.31302
+b'Clockwise'	0.36526
+b'Dark Eyes  -  Schwarze Augen'	0.41751
+b'El Muchacho Alegre (Album Version)'	0.41751
+b'Se Sensation'	0.44363
+b'Bernard Lavilliers [En Public]'	0.44363
+b'Discoshit'	0.46975
+"b'Danzonete ""Rompiendo La Rutina'"	0.46975
+b'The Letter (Edited)'	0.49587
+b'Cuando Pienso En Ti'	0.49587
+
+----AVERAGE----	0.0
+Actual Average	249.5068641605057
+b'Undercover'	248.99873
+b'Colonnade Gardens'	248.58077
+b'Good To Me'	249.02485
+b'Aan De Kust (Live)'	250.22649
+b'La Vida Fina (2008 Digital Remaster)'	250.48771
+b'Code 99'	248.99873
+b'Love Show'	249.65179
+b'Another Word'	250.40934
+b'Heavy Lies The Crown'	248.78975
+b'Wood And Wire'	249.46893
+
+----MEDIAN----	0.0
+"b""Ballin' Out (feat. K.G. Killa'Gegs & Boss Hogg)"""	228.8322
+"b""Mother's Gone"""	228.8322
+b'Who Is It What Is It'	228.8322
+b'Pop The Bottle'	228.8322
+b'So oder So'	228.8322
+b'Step Ya Game Up (Remix)'	228.8322
+b'3-5-0-0'	228.8322
+b'Cigar Splittas KutMasta Kurt remix (feat. Planet Asia)'	228.8322
+"b""Ossie's Dream"""	228.8322
+b'Overjoyed'	228.8322
+
+----Q6. MOST ENERGETIC AND DANCEABILE SONGS	0.0
+
+----Q8. MOST GENERIC & UNIQUE ARTIST BY PAGERANK	0.0
+
+----GENERIC----	0.0
+b'The Rolling Stones'	18.338221019194737
+b'The Beatles'	15.110382380674048
+b'Lou Reed & The Velvet Underground'	12.114185187628959
+b'The Kinks'	12.11031903426633
+b'The Velvet Underground'	12.055125498866957
+b'Orjan Nilsen'	11.886781197617083
+b'Led Zeppelin'	11.8258350476354
+b'The Velvet Underground / Nico'	10.85852489720322
+b'Alec Empire'	10.639063496613012
+b'Mike Foyle'	10.559178052568628
+
+----UNIQUE----	0.0
+b'Ashley Best'	0.0012500000000000011
+b'Kuti'	0.0012500000000000011
+b'Brutal Deluxe'	0.0012500000000000011
+b'Marlon Asher'	0.0012500000000000011
+b'Tommyboy'	0.0012500000000000011
+b'Alphonse Mouzon'	0.0012500000000000011
+b'Al-Bird'	0.0012500000000000011
+b'Tayfun'	0.0012500000000000011
+"b""Soulsetters Rockin' Blues Band"""	0.0012500000000000011
+b'Christopher'	0.0012500000000000011
