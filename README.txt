@@ -21,12 +21,14 @@ This README.txt contains the following sections:
 
 ——————OVERVIEW——————
 
-This project uses the Apache Hadoop framework onto of the Hadoop Distributed File System (HDFS) to run an analysis on
+This project uses the Apache Hadoop framework with the Hadoop Distributed File System (HDFS) to run an analysis on
 the Million Song Dataset. Gradle is used for build automation, and can be executing manually with `gradle clean;
 gralde build`. The application is constructed within a multi-layer package under `src/main`. Thus, the build
 directory will be constructed with the compiled class files under `/build/classes/java/main`, and the Hadoop JAR file
-under `/build/libs`. It is important that a local or shared HDFS and the appropriate configuration files have been
-set up prior to running.
+under `/build/libs`.
+
+It is important that a local or shared HDFS and the appropriate configuration files have been set up prior to
+running. The configuration for the local HDFS is found under /conf, and the shared 
 
 Once the JAR file has been packaged, and the appropriate resources are started for HDFS and YARN, the application
 can be executed by running:
@@ -77,9 +79,10 @@ provides the ability to specify whether or not the application should run on the
 
 2. Job Explanation
 
-	- 1-6: these questions are managed with two reducer side hash-maps for the artists and songs. These are
-	  generically implemented, such that the top-k results and results can simply be measured. This is done by
-	  sorting the values on the target type for the generic variable.
+	- 1-6: these questions are managed in one job with two reducer side hash-maps for the artists and songs.
+	  These are generically implemented, such that the top-k results and results can simply be measured. This is
+	  done by sorting the values on the target type for the generic variable.
+
 
 	- 7: average segment data is is created by using Hadoop distributed cache from a previous job to pre-allocate
 	  the memory and size for each segment type. Multiple reducers are used for each of the segment types. With
@@ -89,9 +92,10 @@ provides the ability to specify whether or not the application should run on the
 	  The running average is computed by reducing or extending a sample segment array to fit the averaged size
 	  array. This is done by taking values from proportional strides and updating the associated value in the
 	  averaged array. There are two ways this is done, depending on the size of the sample segment array, this
-	  includes taking (a) longer segments map equally separated values to each value of the globally averaged segment
-	  array, or (b) shorter segments map each value to equally separated values of the globally averaged segment
-	  array.
+	  includes taking (a) longer segments map equally separated values to each value of the globally averaged
+	  segment array, or (b) shorter segments map each value to equally separated values of the globally averaged
+	  segment array.
+
 
 	- 8: the most generic and unique artists looks at the list of similar artists for each artist. This is done
 	  because the values are similar artists list is computed already following some algorithm, and could give
@@ -124,151 +128,346 @@ provides the ability to specify whether or not the application should run on the
 	  function g(x_n; w) is parameterized by the vector w; and using ordinary least squares, we can approximate the
 	  values of w to fit a model. The gradient of the sum of squared errors with respect to w can be computed for
 	  each sample, but generalized to the matrix equation: X.T T = X.T X w , X represents all the samples, T
-		represents all the target hotness values, and w are the weights. We can solve for the weights directly, and
-		approximates a solution for that minimizes the squared error for all X.
+	  represents all the target hotness values, and w are the weights. We can solve for the weights directly, and
+  	  approximates a solution for that minimizes the squared error for all X.
 
-		After finding a set of parameters w for X, a new sample x_n can be found by traversing in the direction that
-		increases the g(x_n; w). Thus, finding a value greater than one.
+ 	  After finding a set of parameters w for X, a new sample x_n can be found by traversing in the direction of the
+	  gradient that increases g(x_n; w). Thus, finding sample values that result in a target t_n greater than one.
 
-	- 10: 
+
+	- 10: This question was broken into two parts that were not significantly related for reasons discussed further.
+	  These approaches are detailed in sections (a) and (b) below.
+
+	  	a) My first approach went to answer the question "Can a new song fall into a specific year based off its
+		   feature values? Then used to populate missing values?" To answer this, the songs will have to be
+		   classified with high enough accuracy to model the data. Tools used included Apache Hadoop, and Apache 
+		   Spark. Data was read from HDFS in Hadoop to format the data to be used by machine learning libraries
+		   in Spark. The first job in Hadoop formatted data to LIBSVM format:
+		   
+		   <label> <index1>:<value1> <index2>:<value2> ...
+		   .
+		   .
+		   .
+		
+		   Each sample x_n was its own entry for some song.  The <label> represented the year for that song. The 
+		   feature values used included: artist_hotness, song_hotness, duration, fade_in, key, loudness, mode, 
+		   fade_out, and tempo.
+
+		   Once in the desired format, the Scala project can be built using SBT and submitted to Spark. The Spark
+		   job was built to classify the songs from the feature values using a Multilayer perceptron classifier.
+		   This is based on a feed-forward artificial neural network. There were 10 inputs fed through a deep 
+		   neural network structure with varying hidden unit sizes. The final layer passed through a Softmax
+		   function using the multinomial logistic loss to minimize the negative log likelihood. Training was done
+		   on a partition of the data for various number of iterations. The accuracy could then be tested for the
+		   training set and test set. However, the results diminished with various hyperparmeters. Test accuracy
+		   would not get above 15% correctly predicted, and the results were subpar. It is possible the features 
+		   are not correlated enough through for specific classes, which leads to reason for a second question.
+
+		b) This question kept into consideration the years that songs were produced, but explored the geographical
+		   references for these songs. "Where does the most recently recorded song originate from within the
+		   dataset?" To answer this, a visual approach was taken to graphically display the coordinate location of
+		   songs, and label them by year. Tools for this included Apache Hadoop, and Python for visuals. 
+		   A MapReduce job was done over the dataset analysis and metadata files to organize the data by:
+
+		   longitude  latitude  year
+		   .
+		   .
+		   .
+		 
+		   Since the goal is to look at the most recently recorded song from a given location, the data could be
+		   joined by song_id, and organized for unique longitude and latitude values. However, the years could
+		   repeated. The span of years ranged from 1929 to 2010, with geographical coordinates from around the
+		   world.
+
+		   Once organized, they could be read into Python. From here, the geographical coordinates could be
+		   converted to pixel placements on a two-dimensional map of the world following a Mercator Projection.
+		   Points were then assigned to a color map to visually distinguish between years. Once computed, an
+		   image of all the geographical locations with an associated color representing the year is displayed.
+		   A derivation for this projection, code, and resulting image can be seen in the jupyter notebook
+		   /notebook/location-notebook.ipynb
 
 
 ——————STRUCTURE——————
 
-cs455.scaling.client: consists of classes responsible for starting new clients, sending messages to the server, and
-collecting statistics.
+Build files:
 
-	- Client.java
+	- build.gradle
+	
+		Used to build Java files and libraries then create an executable JAR file for Apache Hadoop jobs.
 
-		There are multiple Clients in the system that send and receive data
-		to the server.
+	- build.sbt
 
-		A client provides the following functionalities:
+		Used to build Scala files and libraries for Apache Spark job.
 
-		- Connect and maintain an active connection to the server.
- 		- Regularly send data packets to the server. The pay loads for these
-		  data packets are 8 KB of randomly generated bytes. The rate at
-		  which each connection will generate packets is R per-second.
-		- The client will track hash codes of the data packets that it has
-		  sent to the server. A server will acknowledge every packet that it
-		  has received by sending the computed hash code back to the
-		  respective client.
+	- run.sh
 
-		@author stock
+		Used to run MapReduce jobs for all questions.
 
-	- ClientStatistics.java
+	- spark-run.sh
 
-		Hold statistics for the client that pertain to the number of sent
-		and received messages. This class extends TimerTask, and is executed
-		by the client ( specifying timer duration ).
+		Used to run Spark job for question 10.
 
-		@author stock
 
-	- SenderThread.java
+The following Java files live under /src/main/java/...
 
-		The sender thread will run continuously sending messages from the
-		respective client to the server.
+cs455.hadoop.basic: consists of classes responsible for answering questions 1 - 6 & 8.
+
+	- MainJob.java
+
+		This is the entry point when executing the JAR file.
+
+		Multiple input files are read from HDFS to run this single job.
 
 		@author stock
 
-cs455.scaling.server: consists of classes responsible for the server, thread pool, and server-side statistics.
+	- AnalysisMap.java
 
-	- Server.java
+		This class reads the analysis file write out the intermediary file
+		as follows:
 
-		Only one server node in the system to manage incoming connections /
-		messages.
-
-		A server node will spawn a new thread pool manager with a set
-		number of threads. The following functionalities will be provided,
-		and rely on this thread pool:
-
-		- Accept incoming network connections from the clients.
-		- Accept incoming traffic from these connections.
-		- Groups data from the clients together into batches.
-		- Replies to clients by sending back a hash code for each message
-		  provided.
+		< song_id, loudness fade_duration hotness duration danceability
+		energy >
 
 		@author stock
 
-	- ServerStatistics.java
+	- MetadataMap.java
 
-	 	Server statistics for managing clients and throughput. This class
-		extends TimerTask, and is executed by the server ( specifying
-		timer duration ).
+		This class reads the analysis file write out the intermediary file
+		as follows:
 
-		@author stock
-
-	- ThreadPoolManager.java
-
-		A manager for the thread pool that creates the specified number of
-		threads, and holds the queue of tasks that are needed to execute.
+		< song_id, song_title artist_name similar_artists artist_id >
 
 		@author stock
 
-	- WorkerThread.java
+	- MainReducer.java
 
-		Working thread that processes objects off of the queue.
+		Reducer class that takes the output from the mapper and organizes
+ 		the values accordingly.
 
-		When a new task is available on the queue it will be processed by
-		the thread.
-
-		@author stock
-
-cs455.scaling.server.taks: A task interface contains classes for receiving and writing data.
-
-	- Task.java
-
-		Public interface to delegate tasks to available working threads.
-		This can include; registering new clients with {@link Register},
-		reading data from clients via the {@link Receiver}, and sending
-		data back to clients with the {@link Sender}.
+		This contains logic needed to organize and sort data from the
+		mappers. Questions 1 - 6 are calculated and the PageRank code for
+		question 8 can be found here
 
 		@author stock
 
-	- Register.java
 
-		Task to delegate registration of a client with the server
- 		(selector).
+cs455.hadoop.items: consists of classes responsible basic objects needed for cs455.hadoop.basic.
+
+	- Artist.java
+
+		Class representing information regarding an artist. This implements
+		the Item.java interface.
+
+		This includes the songs following:
+
+		a) average loudness
+		b) total time spent fading in songs
+		c) total number of songs
+		d) artist name
+ 		
+		@author stock
+
+	- ArtistData.java
+
+		Public enumerator that implements the Data.java class specific to an
+		Artist object. This assists in sorting, adding, validating, and
+		getting object members.
 
 		@author stock
 
-	- Receiver.java
+	- ArtistRank.java
 
-		Processes data as received from the clients.
-
-		The server will check a set of SelectionKeys, and upon one being
-		readable, a new receiver will be made to manage that data. In turn
-		adding the data to a collection of buffered data received from all
-		clients in the system.
-
-		@author stock
-
-	- Sender.java
-
-		New tasks, containing a list of data, will be processed and sent
- 		back to the clients.
-
-		A sender task contains the data and the respective clients for
-		where to respond to data. When a new thread is available in thread
-		pool manager, a thread will execute this task.
+		Class to hold information for computing PageRank for a given
+		artist.
+	
+		This includes the following:
+		
+		a) Artists Name
+		b) Similar Artists ID's
+		c) Rank for this Artist
 
 		@author stock
 
-cs455.scaling.util: Package for application utilities, and reused code.
+	- Data.java
+	
+		Interface to define the functions behind a Song and Artist.
+		
+		@author stock
 
-	- Logger.java
+	- Item.java 
 
-		Class used to print <b>info</b> and <b>error</b> logs to the
-		console.
+		Declares methods that are used to be implemented by a Song or Artist.
 
 		@author stock
 
-	- TransmissionUtilities.java
+	- Song.java
 
-		Utilities class that are shared between the client and the server.
+		Class representing information regarding a stock. This implements
+		the Item.java interface.
+
+		This includes the songs following:
+
+		a) hotness
+		b) duration
+		c) dance & energy
+		d) song name
+ 		
+		@author stock
+
+	- SongData.java
+
+		Public enumerator that implements the Data.java class specific to an
+		Song object. This assists in sorting, adding, validating, and
+		getting object members.
 
 		@author stock
 
+
+cs455.hadoop.aggregate: consists of classes responsible for answering questions 7 & 9
+
+	- MainJob.java
+
+		This is the entry point when executing the JAR file.
+
+		Multiple input files are read from HDFS, and chained for two jobs.
+		The first job will compute question 7, and use the result as
+		distributed cache for question 9.
+
+		@author stock
+
+	- AnalysisMap.java
+
+		This class reads the analysis file write out the intermediary file
+		as follows:
+
+		< song_id , hotness duration fade-in key loudness mode fade-out
+		tempo time-signature >
+
+		@author stock
+
+	- MetadataMap.java
+
+		This class reads the analysis file write out the intermediary file
+		as follows:
+
+		< song_id , artist_terms >
+
+		@author stock
+
+	- MainReducer.java
+
+		Reducer class that takes the output from the mapper and organizes
+ 		the values accordingly.
+
+		The first write out contains the average segment length for each
+		segment. This will be used for the next job. The second write out
+		is the weights found minimizes the squared error for the sample
+		space. The last write out is the new song with a hotness score
+		greater than one.
+
+		@author stock
+
+	- SecondAnalysisMap.java
+
+		This class reads the analysis file write out the intermediary file
+		as follows:
+
+		< song_id, start-time pitch timbre max-loudness max-loudness-time
+		start-loudness >
+
+		@author stock
+
+	- CustomPartitioner.java
+
+		This class sends the data partitions from SecondAnalysisMap to the
+		corresponding reducers. There are six for this job for each type. 
+
+		@author stock
+
+	- SecondReducer.java
+
+		Reducer class that takes the output from the mapper and organizes
+ 		the values accordingly.
+
+		Each Reducer is associated with a specific segment, and will read
+ 		the average length from cache.
+
+		@author stock
+
+
+cs455.hadoop.util: package for application utilities, and reused code.
+
+	- DocumentUtilities.java
+
+		Code that is reused for map and reducer classes. This resolves
+		code smells across the project.
+
+		@author stock
+
+
+cs455.hadoop.location: consists of classes responsible for answering questions 10
+
+	- MainJob.java
+
+		This is the entry point when executing the JAR file.
+
+		Multiple input files are read from HDFS, and chained for two jobs.
+		The first job will format values in LIBSVM format for Apache Spark,
+		and the second to write out coordinates for visualization.
+
+		@author stock
+
+	- AnalysisMap.java
+
+		This class reads the analysis file write out the intermediary file
+		as follows:
+
+		< song_id , hotness duration fade-in key loudness mode fade-out
+		tempo time-signature >
+
+		@author stock
+
+	- MetadataMap.java
+
+		This class reads the analysis file write out the intermediary file
+		as follows:
+
+		< song_id, artist-hotness longitude latitude >
+
+		@author stock
+
+	- MainReducer.java
+
+		Reducer class that takes the output from the mapper and organizes
+ 		the values accordingly.
+
+		Format the output data in LIBSVM format for Apache Spark as:
+
+		<label> <index1>:<value1> <index2>:<value2>
+
+		@author stock
+
+	- CoordinateReducer.java
+
+		Second reducer class that takes the output from the mapper and
+		organizes the values accordingly.
+
+		Format the data as:
+	
+		longitude  latitude  year
+
+		@author stock
+
+
+The following Scala files live under /src/main/scala/...
+
+
+	- Runner.scala
+
+		Run a MultilayerPerceptronClassifier on the data formatted in
+		the Hadoop MapReduce Job prior.
+
+		@author stock
 
 --
 
