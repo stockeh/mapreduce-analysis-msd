@@ -44,13 +44,14 @@ To simplify the process of compiling the application and running the various job
 used. Within this script, various variables can be modified to change the JAR file or HDFS output file. This script
 provides the ability to specify whether or not the application should run on the local or shared HDFS.
 
-	1. Start HDFS and YARN
+	1. SSH to namenode ( providence ), and start HDFS and YARN
 
 		$HADOOP_HOME/sbin/start-dfs.sh
 
-	2. (Optional) modify the application configurations in the 'run.sh' script
+	2. Modify the application configurations in the 'run.sh' script
 
 		OUT_DIR="/out"
+		JAR_FILE="Jason-Stock-HW3-PC.jar"
 
 	3. Build the project using gradle
 
