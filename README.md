@@ -15,7 +15,9 @@ Subset of features from the **metadata** files:
 
 ## Analysis
 
-There were various questions that come to mind when analyzing the dataset. I seek to answer these questions with MapReduce and various analytical approaches, including; histograming, ordinary learst squares for multiple linear regression, PageRank, etc.
+There were various questions that come to mind when analyzing the dataset. I seek to answer these questions with MapReduce and various analytical approaches, including; histogramming, PageRank, ordinary learst squares for multiple linear regression, and visualization.
+
+### Histogramming 
 
 1. Which artist(s) has the most songs in the data set?
     - Ike & Tina Turner, 208 songs
@@ -25,7 +27,7 @@ There were various questions that come to mind when analyzing the dataset. I see
     - Shenggy, 3.931 dB
     - Pens, 3.746 dB
     - Pain Jerk, 3.746 dB
-3. Which artist has the highest total time spent fading in their songs?
+3. Which artist(s) has the highest total time spent fading in their songs?
     - 50 Cent ft. Murda Mass Young Buck & Spider Loc, 40.5 minutes
     - Vincent Bruley, 39.1 minutes
     - Melvins, 37.7 minutes
@@ -36,15 +38,24 @@ There were various questions that come to mind when analyzing the dataset. I see
     - Mean: You Put a Spell on Me, 4.1 minutes
 5. Create *new* segment data for the average song. Including start time, pitch, timbre, max loudness, max loudness time, and start loudness.
     - ...
-6. Which artist(s) is the most generic? Which artist(s) is the most unique?
+    
+### PageRank 
+
+1. Which artist(s) is the most generic? Which artist(s) is the most unique?
     - Generic: The Rolling Stones, The Beatles, The Fairfield Four
     - Unique: Kuti, Brutal Deluxe, Lennox Brown
-7. Create a song with a higher popularity score than that found in the dataset.  
-    - This method introduces use of multiple linear regression to fit a hyper plane to the sample space. The function g(x_n ; w) is parameterized by the vector w; and using ordinary least squares, we can approximate the values of w to fit a model to the parameters that define a song. Then we can perform a search in the parameter space of w to find a solution of X which results in a hotness target T greater than the maximum in the data.
     
+### Multi-Linear Regression
+
+This method introduces use of multiple linear regression to fit a hyper plane to the sample space. The function g(x_n ; w) is parameterized by the vector w; and using ordinary least squares, we can approximate the values of w to fit a model to the parameters that define a song. Then we can perform a search in the parameter space of w to find a solution of X which results in a hotness target T greater than the maximum in the data.
+
+1. Create a song with a higher popularity score than that found in the dataset.      
+
 **hotness** | duration | end_fade_in | key | loudness | mode | start_fade_out | tempo | time_sign 
 ---|---|---|---|---|---|---|---|---
 **1.155** | 580.307 | 4.463 | 3.721 | -0.0871 | -1.293 | -518.386 | 171.054 | -0.318
 
-8. What is the geographical density of artists corresponding to the year of song releases?
+### Visualization
+
+1. What is the geographical density of artists corresponding to the year of song releases?
     - This explores visual and analytical components, and thus has been shown in a Jupyter Notebook [ here ](https://nbviewer.jupyter.org/github/stockeh/mapreduce-analysis-msd/blob/master/notebook/location-notebook.ipynb)
