@@ -5,13 +5,13 @@ This project focuses on using Apache Hadoop ( version 3.1.2 ) to develop MapRedu
 
 Subset of features from the **analysis** files:
 
-| song_id | song_hotness | sample_rate | danceability | duration | key | loudness | ... | tempo | segments_pitches |
-|---------|--------------|-------------|--------------|----------|-----|----------|-----|-------|------------------|
+| song_id | song_hotness | sample_rate | duration | key | loudness | ... | tempo | segments_pitches |
+|---------|--------------|-------------|----------|-----|----------|-----|-------|------------------|
 
 Subset of features from the **metadata** files:
 
-| artist_fmiliarity | artist_hotness | artist_id | artist_latitude | ... | song_id | title | similar_artists | year |
-|-------------------|----------------|-----------|-----------------|-----|---------|-------|-----------------|------|
+| artist_hotness | artist_id | artist_latitude | ... | song_id | title | similar_artists | year |
+|----------------|-----------|-----------------|-----|---------|-------|-----------------|------|
 
 ## Analysis
 
