@@ -19,6 +19,8 @@ There were various questions that come to mind when analyzing the dataset. I see
 
 ### Histogramming 
 
+Traditional statistical analysis was performed to learn more about the data and the common trends of musical artists. 
+
 1. Which artist(s) has the most songs in the data set?
     - Ike & Tina Turner, 208 songs
     - Johnny Cash, 199 songs
@@ -36,10 +38,12 @@ There were various questions that come to mind when analyzing the dataset. I see
     - Shortest: Rainy Days And Mondays, 0.005 minutes
     - Median: Step Ya Game Up (Remix), 3.8 minutes
     - Mean: You Put a Spell on Me, 4.1 minutes
-5. Create *new* segment data for the average song. Including start time, pitch, timbre, max loudness, max loudness time, and start loudness.
-    - ...
+5. Create new segment data for the average song. Including start time, pitch, timbre, max loudness, max loudness time, and start loudness.
+    - N/A for documentation purposes
     
 ### PageRank 
+
+
 
 1. Which artist(s) is the most generic? Which artist(s) is the most unique?
     - Generic: The Rolling Stones, The Beatles, The Fairfield Four
@@ -47,7 +51,7 @@ There were various questions that come to mind when analyzing the dataset. I see
     
 ### Multi-Linear Regression
 
-This method introduces use of multiple linear regression to fit a hyper plane to the sample space. The function g(x_n ; w) is parameterized by the vector w; and using ordinary least squares, we can approximate the values of w to fit a model to the parameters that define a song. Then we can perform a search in the parameter space of w to find a solution of X which results in a hotness target T greater than the maximum in the data.
+This method introduces use of multiple linear regression to fit a hyper plane to the sample space. Using ordinary least squares, we can approximate the values of parameters w to fit a model to the features that define a song. Then we can perform a search in the parameter space of w to find a solution of X which results in a hotness target T greater than the maximum in the data.
 
 1. Create a song with a higher popularity score than that found in the dataset.      
 
