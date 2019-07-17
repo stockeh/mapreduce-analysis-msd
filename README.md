@@ -47,8 +47,8 @@ Which artist(s) is the most generic? Which artist(s) is the most unique?
 
 The most generic and unique artists looks at the list of similar artists for each artist. This is done because the values are similar artists list is computed already following some algorithm, and could give insight to how artists relate to one another. The Google PageRank algorithm is used to then see how these similar artists compare and which are seemingly more important one is over another. Thus, showing to be more generic. A single reducer side map is used, containing the artist ID, artist name, list of similar artists, and an initial PageRank value of one. The PageRank values are then computed iteratively with a higher value showing more generic artists.
 
-    - Generic: The Rolling Stones, The Beatles, The Fairfield Four
-    - Unique: Kuti, Brutal Deluxe, Lennox Brown
+- Generic: The Rolling Stones, The Beatles, The Fairfield Four
+- Unique: Kuti, Brutal Deluxe, Lennox Brown
     
 ### Multi-Linear Regression
 
@@ -62,5 +62,6 @@ This method introduces use of multiple linear regression to fit a hyper plane to
 
 ### Visualization
 
-- What is the geographical density of artists corresponding to the year of song releases?
-    - This explores visual and analytical components, and thus has been shown in a Jupyter Notebook [ here ](https://nbviewer.jupyter.org/github/stockeh/mapreduce-analysis-msd/blob/master/notebook/location-notebook.ipynb)
+What is the geographical density of artists corresponding to the year of song releases? 
+
+This explores visual and analytical components, and thus has been shown in a Jupyter Notebook [ here ](https://nbviewer.jupyter.org/github/stockeh/mapreduce-analysis-msd/blob/master/notebook/location-notebook.ipynb)
